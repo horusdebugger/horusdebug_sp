@@ -1,5 +1,9 @@
 package org.uso.depurador.componentes.arbol;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
@@ -9,16 +13,22 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.uso.depurador.componentes.ScrollEditor;
 import org.uso.depurador.main.Principal;
 
 import com.mysql.jdbc.DatabaseMetaData;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
+
+import net.infonode.tabbedpanel.TabbedPanel;
+import net.infonode.tabbedpanel.titledtab.TitledTab;
 
 public class BDArbol extends JTree {
 
@@ -73,13 +83,35 @@ public class BDArbol extends JTree {
 		            ResultSet rs;
 		 
 		            rs = stmt.executeQuery("SHOW CREATE PROCEDURE `"+padre.toString()+"`.`"+node.getUserObject().toString()+"`");
+		            String contenido = null;
+		            JButton boton = new JButton("<html><b>x</b></html>");
+	                boton.setOpaque(false);
+	                boton.setContentAreaFilled(false);
+	                boton.setBorderPainted(false);
+	                boton.addActionListener(new ActionListener() {
+						
+						@Override
+						public void actionPerformed(ActionEvent arg0) {
+							if(ventana.editores.getTabCount()>1) {
+								ventana.editores.removeTab(ventana.pestanaDebug);
+							}
+						}
+					});
 		            while ( rs.next() ) {
-		                String lastName = rs.getString("Create Procedure");
-		                ventana.editor.setText(lastName);
+		                contenido = rs.getString("Create Procedure");
 		            }
+		            
+		            if(ventana.editores.getTabCount()>1) {
+		            	ventana.editores.removeTab(ventana.pestanaDebug);
+		            }
+		            ventana.pestanaDebug = new TitledTab("Procedimiento: "+node.getUserObject().toString(), null, ventana.scrollEditorDebug, boton);
+	                ventana.editorDebug.setText(contenido);
+	                ventana.editorDebug.setEditable(false);
+	                ventana.editores.addTab(ventana.pestanaDebug);
+		            
 		            ventana.procedimiento = "`"+padre.toString()+"`.`"+node.getUserObject().toString()+"`";
 		            ventana.procedimiento_barra = node.getUserObject().toString();
-		            ventana.editor.setEditable(false);
+		            ventana.editores.setSelectedTab(ventana.pestanaDebug);
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}

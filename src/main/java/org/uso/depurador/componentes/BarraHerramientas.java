@@ -55,28 +55,36 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		nuevo.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/page_white.png")));
 
 		this.abrir = new JButton();
+		abrir.setToolTipText("Abrir");
 		abrir.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/folder.png")));
 
 		this.guardar = new JButton();
+		guardar.setToolTipText("Guardar");
 		guardar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/disk.png")));
 
 		this.play = new JButton();
+		play.setToolTipText("Iniciar Depuración");
 		play.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_next.png")));
 
 		this.siguiente = new JButton();
+		siguiente.setToolTipText("Siguiente");
 		siguiente.setIcon(
 				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_first.png")));
 
 		this.atras = new JButton();
+		atras.setToolTipText("Atrás");
 		atras.setIcon(
 				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_last.png")));
 
 		this.buscar = new JButton();
+		buscar.setToolTipText("Buscar en el documento");
 		buscar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/find.png")));
-		
+
 		this.detener = new JButton();
+		detener.setToolTipText("Detener depuración");
 		this.detener.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/stop2.png")));
 
+		
 		guardar.addActionListener(new ActionListener() {
 
 			@Override
@@ -101,10 +109,12 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.addSeparator();
 		this.add(play);
 		this.add(detener);
+		this.detener.setEnabled(false);
 		this.add(siguiente);
 		this.add(atras);
 		this.addSeparator();
 		this.add(buscar);
+		this.addSeparator();
 
 		// asignación de eventos a elementos de la toolbar
 		this.play.addActionListener(this);
@@ -211,12 +221,10 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 						BufferedWriter bw = new BufferedWriter(fw);
 						bw.write(this.ventana.editor.getText());
 						bw.close();
-						this.ventana.control = false;
 						this.ventana.archivo = null;
-						this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
 						this.ventana.editor.setText("");
-						TitledTab pestanaTemp = new TitledTab("Nuevo", null, ventana.scrollEditor, null);
-						this.ventana.editores.addTab(pestanaTemp);
+						this.ventana.pestanaEditor.setText("Nuevo");
+						this.ventana.control = false;
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
@@ -233,12 +241,11 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 								BufferedWriter bw = new BufferedWriter(fw);
 								bw.write(this.ventana.editor.getText());
 								bw.close();
-								this.ventana.control = false;
+								
 								this.ventana.archivo = null;
-								this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
 								this.ventana.editor.setText("");
-								TitledTab pestanaTemp = new TitledTab("Nuevo", null, ventana.scrollEditor, null);
-								this.ventana.editores.addTab(pestanaTemp);
+								this.ventana.pestanaEditor.setText("Nuevo");
+								this.ventana.control = false;
 							} catch (IOException e1) {
 								e1.printStackTrace();
 							}
@@ -251,18 +258,16 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 
 			} else if (resultado == JOptionPane.NO_OPTION) {
 
-				this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
 				this.ventana.editor.setText("");
-				TitledTab pestanaTemp = new TitledTab("Nuevo", null, ventana.scrollEditor, null);
-				this.ventana.editores.addTab(pestanaTemp);
+				this.ventana.pestanaEditor.setText("Nuevo");
 				this.ventana.control = false;
 				this.ventana.archivo = null;
 			}
 		} else {
-			this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
 			this.ventana.editor.setText("");
-			TitledTab pestanaTemp = new TitledTab("Nuevo", null, ventana.scrollEditor, null);
-			this.ventana.editores.addTab(pestanaTemp);
+			ventana.pestanaEditor.setText("Nuevo");
+			this.ventana.control = false;
+			
 		}
 		
 	}
@@ -323,9 +328,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 									    
 									    ventana.editor.setText(contenido);
 									    ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
-									    this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
-										TitledTab pestanaTemp = new TitledTab(ventana.archivo.getName(), null, ventana.scrollEditor, null);
-										this.ventana.editores.addTab(pestanaTemp);
+									    ventana.pestanaEditor.setText(ventana.archivo.getName());
 										this.ventana.control = false;
 									} finally {
 									    br.close();
@@ -356,9 +359,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 									    
 									    ventana.editor.setText(contenido);
 									    ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
-									    this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
-										TitledTab pestanaTemp = new TitledTab(ventana.archivo.getName(), null, ventana.scrollEditor, null);
-										this.ventana.editores.addTab(pestanaTemp);
+									    ventana.pestanaEditor.setText(ventana.archivo.getName());
 										this.ventana.control = false;
 									} finally {
 									    br.close();
@@ -393,9 +394,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 						    
 						    ventana.editor.setText(contenido);
 						    ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
-						    this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
-							TitledTab pestanaTemp = new TitledTab(elegir.getSelectedFile().getName(), null, ventana.scrollEditor, null);
-							this.ventana.editores.addTab(pestanaTemp);
+						    ventana.pestanaEditor.setText(ventana.archivo.getName());
 							this.ventana.control = false;
 							this.ventana.archivo = elegir.getSelectedFile();
 						} finally {
@@ -428,10 +427,8 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 				    String contenido = sb.toString();
 				    
 				    ventana.editor.setText(contenido);
-				    ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
-				    this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
-					TitledTab pestanaTemp = new TitledTab(ventana.archivo.getName(), null, ventana.scrollEditor, null);
-					this.ventana.editores.addTab(pestanaTemp);
+				    ventana.pestanaEditor.setText(ventana.archivo.getName());
+				    ventana.control = false;
 
 				} finally {
 				    br.close();

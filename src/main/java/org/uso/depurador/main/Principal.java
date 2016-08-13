@@ -10,9 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -23,6 +28,7 @@ import org.uso.depurador.componentes.Editor;
 import org.uso.depurador.componentes.Menu;
 import org.uso.depurador.componentes.ScrollEditor;
 import org.uso.depurador.componentes.arbol.BDArbol;
+import org.uso.depurador.utlidades.Utilidades;
 import org.uso.depurador.componentes.Parametro;
 
 import com.sun.org.apache.bcel.internal.generic.DCONST;
@@ -62,10 +68,14 @@ public class Principal extends JFrame {
 	// contenedor de pestanas
 	public TabbedPanel editores;
 	private TabWindow consolas;
+	public TitledTab pestanaDebug;
+	public TitledTab pestanaEditor;
 	// conexion
 	public Connection conexion;
 	public ScrollEditor scrollEditor;
+	public ScrollEditor scrollEditorDebug;
 	public Editor editor;
+	public Editor editorDebug;
 	// archivo
 	public File archivo = null;
 	// control de archivo
@@ -81,6 +91,17 @@ public class Principal extends JFrame {
 		crearJToolbar();
 		crearDocks();
 		crearVentana();
+		/*try {
+	        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+	    } catch (ClassNotFoundException e) {
+	        e.printStackTrace();
+	    } catch (InstantiationException e) {
+	        e.printStackTrace();
+	    } catch (IllegalAccessException e) {
+	        e.printStackTrace();
+	    } catch (UnsupportedLookAndFeelException e) {
+	        e.printStackTrace();
+	    }*/
 	}
 
 	void crearDocks() {
@@ -100,7 +121,9 @@ public class Principal extends JFrame {
 		this.consolaSQLView.getWindowProperties().setCloseEnabled(false);
 		//this.consolaSQLView.getWindowProperties().setMinimizeEnabled(false);
 		this.consolaSQLView.getWindowProperties().setUndockEnabled(false);
-		this.consolaVariables = new View("Variables", null, new JScrollPane(new JTextArea()));
+		Utilidades util = new Utilidades();
+		util.LeerArchivoXML();
+		this.consolaVariables = new View("Variables", null, new JScrollPane(util.getTablaVariables()));
 		this.editores = new TabbedPanel();
 		this.editorView = new View("", null, editores);
 		this.editorView.getWindowProperties().setUndockEnabled(false);
@@ -137,10 +160,12 @@ public class Principal extends JFrame {
 		this.consolas.setSelectedTab(0);
 		
 		this.editor = new Editor();
+		this.editorDebug = new Editor();
 		this.scrollEditor = new ScrollEditor(editor, true);
+		this.scrollEditorDebug = new ScrollEditor(editorDebug, true);
 
-		TitledTab temp = new TitledTab("Nuevo", null, scrollEditor, null);
-		this.editores.addTab(temp);
+		this.pestanaEditor = new TitledTab("Nuevo", null, scrollEditor, null);
+		this.editores.addTab(this.pestanaEditor);
 		
 
 		SplitWindow editores_consolas = new SplitWindow(false, 0.6f, editorView, consolas);
@@ -161,20 +186,23 @@ public class Principal extends JFrame {
 			
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				control = true;
+
 			}
 			
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				control = true;
+				
 			}
 			
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				// TODO Auto-generated method stub
-				
+				control = true;
 			}
 		});
+		
+		
+		
+		
 		
 	}
 
