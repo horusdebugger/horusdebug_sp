@@ -79,6 +79,7 @@ public class BDArbol extends JTree {
 		            }
 		            ventana.procedimiento = "`"+padre.toString()+"`.`"+node.getUserObject().toString()+"`";
 		            ventana.procedimiento_barra = node.getUserObject().toString();
+		            ventana.editor.setEditable(false);
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}

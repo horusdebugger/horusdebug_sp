@@ -42,7 +42,7 @@ import net.infonode.tabbedpanel.titledtab.TitledTab;
 public class BarraHerramientas extends JToolBar implements ActionListener {
 
 	/* Elementos de la barra de tareas */
-	private JButton nuevo, abrir, guardar, play, siguiente, atras, buscar;
+	private JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener;
 
 	/* Ventana */
 	private Principal ventana;
@@ -73,6 +73,9 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 
 		this.buscar = new JButton();
 		buscar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/find.png")));
+		
+		this.detener = new JButton();
+		this.detener.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/stop2.png")));
 
 		guardar.addActionListener(new ActionListener() {
 
@@ -97,6 +100,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.add(guardar);
 		this.addSeparator();
 		this.add(play);
+		this.add(detener);
 		this.add(siguiente);
 		this.add(atras);
 		this.addSeparator();
@@ -107,6 +111,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.nuevo.addActionListener(this);
 		this.abrir.addActionListener(this);
 		this.guardar.addActionListener(this);
+		
 	}
 
 	void ejecutar() {

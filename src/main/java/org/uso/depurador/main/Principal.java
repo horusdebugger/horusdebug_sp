@@ -49,6 +49,7 @@ public class Principal extends JFrame {
 	private View consolaView;
 	private View consolaSQLView;
 	private View consolaErroresView;
+	private View consolaVariables;
 	private View editorView;
 	// ventana raiz
 	private RootWindow ventanaRaiz;
@@ -99,6 +100,7 @@ public class Principal extends JFrame {
 		this.consolaSQLView.getWindowProperties().setCloseEnabled(false);
 		//this.consolaSQLView.getWindowProperties().setMinimizeEnabled(false);
 		this.consolaSQLView.getWindowProperties().setUndockEnabled(false);
+		this.consolaVariables = new View("Variables", null, new JScrollPane(new JTextArea()));
 		this.editores = new TabbedPanel();
 		this.editorView = new View("", null, editores);
 		this.editorView.getWindowProperties().setUndockEnabled(false);
@@ -108,6 +110,7 @@ public class Principal extends JFrame {
 		this.mapa.addView(1, consolaView);
 		this.mapa.addView(2, consolaErroresView);
 		this.mapa.addView(3, consolaSQLView);
+		this.mapa.addView(4, consolaVariables);
 		
 		
 		this.ventanaRaiz = DockingUtil.createRootWindow(mapa, true);
@@ -128,8 +131,10 @@ public class Principal extends JFrame {
 		this.consolas.addTab(consolaView);
 		this.consolas.addTab(consolaErroresView);
 		this.consolas.addTab(consolaSQLView);
+		this.consolas.addTab(consolaVariables);
 		this.consolas.getWindowProperties().setCloseEnabled(false);
 		this.consolas.getWindowProperties().setUndockEnabled(false);
+		this.consolas.setSelectedTab(0);
 		
 		this.editor = new Editor();
 		this.scrollEditor = new ScrollEditor(editor, true);
