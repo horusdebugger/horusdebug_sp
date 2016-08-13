@@ -196,7 +196,7 @@ public class Login extends JFrame {
 						String.valueOf(txtPass.getPassword()), txtPort.getText(), txtDB);
 				java.sql.Connection cn = c.getConexion();
 				if (cn != null) {
-					Main main = new Main(cn);
+					Principal main = new Principal(cn);
 					dispose();
 				} else {
 					JOptionPane.showMessageDialog(Login.this, "No se pudo conectar a MySQL. :(", "ERROR!",

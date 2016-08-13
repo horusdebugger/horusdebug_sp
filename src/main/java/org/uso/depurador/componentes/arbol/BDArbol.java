@@ -15,6 +15,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.uso.depurador.main.Principal;
+
 import com.mysql.jdbc.DatabaseMetaData;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
@@ -33,12 +35,14 @@ public class BDArbol extends JTree {
 
 	ArrayList<BD> bds = new ArrayList<>();
 
-	public BDArbol(Connection conn) {
+	Principal ventana;
 
+	public BDArbol(Connection conn, Principal principal) { 
+		this.ventana = principal;
 		this.conn = conn;
 
 			try {
-				DatabaseMetaData meta = (DatabaseMetaData) this.conn.getMetaData();
+				//DatabaseMetaData meta = (DatabaseMetaData) this.conn.getMetaData();
 				System.out.println(conn.getCatalog());
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
@@ -58,13 +62,26 @@ public class BDArbol extends JTree {
 			public void mouseClicked(MouseEvent e) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) BDArbol.this.getLastSelectedPathComponent();
 				((DefaultTreeModel) BDArbol.this.getModel()).nodeChanged(node);
-				if (e.getClickCount() == 1) {
+				if (e.getClickCount() == 2) {
 					if (node == null)
 						return;
-					Object nodeInfo = node.getUserObject();
-					
-					System.out.println(nodeInfo.toString());
-					
+					Object padre = node.getParent().toString();
+					System.out.println(padre.toString());
+					System.out.print(node.getUserObject().toString());
+					try {
+					Statement stmt = conn.createStatement();
+		            ResultSet rs;
+		 
+		            rs = stmt.executeQuery("SHOW CREATE PROCEDURE `"+padre.toString()+"`.`"+node.getUserObject().toString()+"`");
+		            while ( rs.next() ) {
+		                String lastName = rs.getString("Create Procedure");
+		                ventana.editor.setText(lastName);
+		            }
+		            ventana.procedimiento = "`"+padre.toString()+"`.`"+node.getUserObject().toString()+"`";
+		            ventana.procedimiento_barra = node.getUserObject().toString();
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 		});
@@ -92,16 +109,17 @@ public class BDArbol extends JTree {
 			stmt.close();
 
 			for (BD bd : bds) {
-				Statement stmt2 = this.conn.createStatement();
-				ResultSet rs2 = stmt2.executeQuery("SELECT TABLE_NAME FROM information_schema.TABLES "
-						+ "WHERE TABLE_SCHEMA = '" + bd.getNombre() + "'");
-				ArrayList<BDTabla> tablas = new ArrayList<>();
-				while (rs2.next()) {
-					BDTabla tabla = new BDTabla();
-					tabla.setPadre(bd);
-					tabla.setNombre(rs2.getString("TABLE_NAME"));
-					tablas.add(tabla);
-				}
+				/*
+				 * Statement stmt2 = this.conn.createStatement(); ResultSet rs2
+				 * = stmt2.executeQuery(
+				 * "SELECT TABLE_NAME FROM information_schema.TABLES " +
+				 * "WHERE TABLE_SCHEMA = '" + bd.getNombre() + "'");
+				 * ArrayList<BDTabla> tablas = new ArrayList<>(); while
+				 * (rs2.next()) { BDTabla tabla = new BDTabla();
+				 * tabla.setPadre(bd);
+				 * tabla.setNombre(rs2.getString("TABLE_NAME"));
+				 * tablas.add(tabla); }
+				 */
 				Statement stmt3 = this.conn.createStatement();
 				ResultSet rs3 = stmt3.executeQuery("SHOW PROCEDURE STATUS WHERE db = '" + bd.getNombre() + "'");
 				ArrayList<BDProc> procs = new ArrayList<>();
@@ -112,10 +130,10 @@ public class BDArbol extends JTree {
 					procs.add(proc);
 				}
 
-				bd.setTablas(tablas);
+				// bd.setTablas(tablas);
 				bd.setProcedimientos(procs);
-				rs2.close();
-				stmt2.close();
+				// rs2.close();
+				// stmt2.close();
 				rs3.close();
 				stmt3.close();
 			}
@@ -129,7 +147,6 @@ public class BDArbol extends JTree {
 				for (BDTabla tabla : db.getTablas()) {
 					DefaultMutableTreeNode nodo2 = new DefaultMutableTreeNode(tabla);
 					nodo.add(nodo2);
-					
 				}
 
 				for (BDProc proc : db.getProcedimientos()) {

@@ -43,10 +43,10 @@ import net.infonode.docking.util.ViewMap;
 import net.infonode.util.Direction;
 
 public class Main extends JFrame {
-	
+
 	private Connection conn;
 
-	// ventana ra�z
+	// ventana raiz
 	private RootWindow ventanaRaiz;
 
 	// vistas estaticas
@@ -61,48 +61,70 @@ public class Main extends JFrame {
 	// propiedades del tema de las ventas
 	private RootWindowProperties propiedades = new RootWindowProperties();
 
-	// donde los layouts son almacenados
-	private byte[][] layouts = new byte[3][];
-	
 	public Editor editor;
 	public ScrollEditor scrollPane;
-	
+
 	public BDArbol arbol;
+
+	public JTextArea consolaNormal;
+	public JTextArea consolaErrores;
 
 	private RTextScrollPane getEditor() {
 		this.editor = new Editor();
-		this.scrollPane = new ScrollEditor(editor, true);	
-		
-		//GutterIconInfo array[] = scrollPane.getGutter().getBookmarks();
-		
+		this.scrollPane = new ScrollEditor(editor, true);
+
+		// GutterIconInfo array[] = scrollPane.getGutter().getBookmarks();
+
 		return scrollPane;
 	}
-	
+
 	public Main(Connection cn) {
-		this.conn = cn;
+		/*this.conn = cn;
 		this.arbol = new BDArbol(conn);
+		this.consolaNormal = new JTextArea();
+		this.consolaErrores = new JTextArea();
 		this.setTitle("Depurador HORUS-IDE");
 		crearVentanaRaiz();
 		setDefaultLayout();
 		mostrarVentana();
 		agregarMenu();
-		agregarBarraHerramientas();
+		agregarBarraHerramientas();*/
 	}
-	
 
 	public void agregarMenu() {
-		Menu menu = new Menu();
-		this.setJMenuBar(menu);
+		/*Menu menu = new Menu(this);
+		this.setJMenuBar(menu);*/
+	}
+
+	public Connection getConn() {
+		return conn;
+	}
+
+	public void setConn(Connection conn) {
+		this.conn = conn;
 	}
 
 	public void agregarBarraHerramientas() {
-		BarraHerramientas barra = new BarraHerramientas(editor, scrollPane);
+		/*BarraHerramientas barra = new BarraHerramientas(this);
 		this.getContentPane().add(barra, BorderLayout.NORTH);
-		barra.setFloatable(false);
+		barra.setFloatable(false);*/
 	}
-	
-	
-	
+
+	public JTextArea getConsolaNormal() {
+		return consolaNormal;
+	}
+
+	public void setConsolaNormal(JTextArea consolaNormal) {
+		this.consolaNormal = consolaNormal;
+	}
+
+	public JTextArea getConsolaErrores() {
+		return consolaErrores;
+	}
+
+	public void setConsolaErrores(JTextArea consolaErrores) {
+		this.consolaErrores = consolaErrores;
+	}
 
 	private void crearVentanaRaiz() {
 		vistas[0] = new View("Bases de Datos", null, new JScrollPane(arbol));
@@ -118,23 +140,25 @@ public class Main extends JFrame {
 		vistas[2] = new View("Editor", null, getEditor());
 		vistas[2].getWindowProperties().setCloseEnabled(false);
 		vistas[2].getWindowProperties().setUndockEnabled(false);
+		vistas[2].getWindowProperties().setMinimizeEnabled(false);
+		vistas[2].getWindowProperties().setTitleProvider(null);
 		vistasMap.addView(2, vistas[2]);
 
-		vistas[3] = new View("Consola", null, new JScrollPane(new JTextArea("Consola")));
+		vistas[3] = new View("Consola", null, new JScrollPane(consolaNormal));
 		vistas[3].getWindowProperties().setCloseEnabled(false);
 		vistas[3].getWindowProperties().setUndockEnabled(false);
 		vistasMap.addView(3, vistas[3]);
-		
-		vistas[4] = new View("Errores", null, new JScrollPane(new JTextArea("Errores")));
+
+		vistas[4] = new View("Errores", null, new JScrollPane(consolaErrores));
 		vistas[4].getWindowProperties().setCloseEnabled(false);
 		vistas[4].getWindowProperties().setUndockEnabled(false);
 		vistasMap.addView(4, vistas[4]);
-		
+
 		vistas[5] = new View("Variables", null, new JScrollPane(new JTextArea("Variables")));
 		vistas[5].getWindowProperties().setCloseEnabled(false);
 		vistas[5].getWindowProperties().setUndockEnabled(false);
 		vistasMap.addView(5, vistas[5]);
-		
+
 		ventanaRaiz = DockingUtil.createRootWindow(vistasMap, null, true);
 
 		propiedades.addSuperObject(tema.getRootWindowProperties());
@@ -196,22 +220,20 @@ public class Main extends JFrame {
 		this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		this.setVisible(true);
 	}
-	
+
 	public static TabWindow Tools;
 
 	private void setDefaultLayout() {
-		
-		
 
-		Tools = new TabWindow(new View[]{vistas[3], vistas[4], vistas[5]});
+		Tools = new TabWindow(new View[] { vistas[3], vistas[4], vistas[5] });
 		SplitWindow BdyProc = new SplitWindow(false, 0.3f, vistas[0], Tools);
 		Tools.getWindowProperties().setCloseEnabled(false);
 		Tools.getWindowProperties().setUndockEnabled(false);
 		SplitWindow EditorConsola = new SplitWindow(false, 0.7f, vistas[2], Tools);
 		SplitWindow principal = new SplitWindow(true, 0.2f, BdyProc, EditorConsola);
-		
+
 		ventanaRaiz.setWindow(principal);
-		
+
 		// tabWindow.add(vistas[0]);
 		WindowBar windowBar = ventanaRaiz.getWindowBar(Direction.DOWN);
 
