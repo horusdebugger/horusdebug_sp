@@ -1,7 +1,13 @@
 package org.uso.depurador.main;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
@@ -9,6 +15,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -16,13 +24,17 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 
+import org.uso.depurador.componentes.BarraDeEstado;
 import org.uso.depurador.componentes.BarraHerramientas;
 import org.uso.depurador.componentes.Editor;
 import org.uso.depurador.componentes.Menu;
@@ -30,9 +42,13 @@ import org.uso.depurador.componentes.ScrollEditor;
 import org.uso.depurador.componentes.arbol.BDArbol;
 import org.uso.depurador.utlidades.Utilidades;
 import org.uso.depurador.componentes.Parametro;
+import org.uso.depurador.componentes.PopMenuConsolasListener;
+import org.uso.depurador.componentes.PopMenuTablaConsultaListener;
 
 import com.sun.org.apache.bcel.internal.generic.DCONST;
 
+import javafx.scene.control.Separator;
+import javafx.scene.layout.Border;
 import net.infonode.docking.RootWindow;
 import net.infonode.docking.SplitWindow;
 import net.infonode.docking.TabWindow;
@@ -53,7 +69,7 @@ public class Principal extends JFrame {
 	// Vetanas dock
 	private View bdView;
 	private View consolaView;
-	private View consolaSQLView;
+	public View consultaView;
 	private View consolaErroresView;
 	private View consolaVariables;
 	private View editorView;
@@ -67,7 +83,7 @@ public class Principal extends JFrame {
 	private RootWindowProperties propiedades = new RootWindowProperties();
 	// contenedor de pestanas
 	public TabbedPanel editores;
-	private TabWindow consolas;
+	public TabWindow consolas;
 	public TitledTab pestanaDebug;
 	public TitledTab pestanaEditor;
 	// conexion
@@ -85,12 +101,26 @@ public class Principal extends JFrame {
 	public String procedimiento_barra = ""; 
 	//parametros
 	public List<Parametro> parametros = null;
+	//tablas
+	public JTable tablaConsultas = new JTable(new DefaultTableModel(){
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+	});
+	// Barra de estado
+	BarraDeEstado barraEstado = new BarraDeEstado();
+	// Textareas de consolas
+	public JTextArea consola = new JTextArea();
+	public JTextArea consolaErrores = new JTextArea();
 	public Principal(Connection c) {
 		this.conexion = c;
 		crearJMenuBar();
 		crearJToolbar();
 		crearDocks();
 		crearVentana();
+		crearBarradeEstado();
 		/*try {
 	        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	    } catch (ClassNotFoundException e) {
@@ -109,18 +139,27 @@ public class Principal extends JFrame {
 		this.bdView = new View("Bases de datos", null, new JScrollPane(new BDArbol(conexion,this)));
 		this.bdView.getWindowProperties().setCloseEnabled(false);
 		this.bdView.getWindowProperties().setUndockEnabled(false);
-		this.consolaView = new View("Consola", null, new JScrollPane(new JTextArea()));
+		this.consola.setEditable(false);
+		this.consola.addMouseListener(new PopMenuConsolasListener(this));
+		this.consola.setFont(new Font("Lucida console", Font.PLAIN, 12));
+		this.consolaView = new View("Consola", null, new JScrollPane(consola));
 		this.consolaView.getWindowProperties().setCloseEnabled(false);
 		//this.consolaView.getWindowProperties().setMinimizeEnabled(false);
 		this.consolaView.getWindowProperties().setUndockEnabled(false);
-		this.consolaErroresView = new View("Errores", null, new JScrollPane(new JTextArea()));
+		this.consolaErrores.setEditable(false);
+		this.consolaErrores.setForeground(Color.RED);
+		this.consolaErrores.addMouseListener(new PopMenuConsolasListener(this));
+		this.consolaErrores.setFont(new Font("Lucida console", Font.PLAIN, 12));
+		this.consolaErroresView = new View("Errores", null, new JScrollPane(consolaErrores));
 		this.consolaErroresView.getWindowProperties().setCloseEnabled(false);
+
 		//this.consolaErroresView.getWindowProperties().setMinimizeEnabled(false);
 		this.consolaErroresView.getWindowProperties().setUndockEnabled(false);
-		this.consolaSQLView = new View("Consola SQL", null, new JScrollPane(new JTextArea()));
-		this.consolaSQLView.getWindowProperties().setCloseEnabled(false);
+		tablaConsultas.addMouseListener(new PopMenuTablaConsultaListener(this));
+		this.consultaView = new View("Consulta", null, new JScrollPane(tablaConsultas));
+		this.consultaView.getWindowProperties().setCloseEnabled(false);
 		//this.consolaSQLView.getWindowProperties().setMinimizeEnabled(false);
-		this.consolaSQLView.getWindowProperties().setUndockEnabled(false);
+		this.consultaView.getWindowProperties().setUndockEnabled(false);
 		Utilidades util = new Utilidades();
 		util.LeerArchivoXML();
 		this.consolaVariables = new View("Variables", null, new JScrollPane(util.getTablaVariables()));
@@ -132,7 +171,7 @@ public class Principal extends JFrame {
 		this.mapa.addView(0, bdView);
 		this.mapa.addView(1, consolaView);
 		this.mapa.addView(2, consolaErroresView);
-		this.mapa.addView(3, consolaSQLView);
+		this.mapa.addView(3, consultaView);
 		this.mapa.addView(4, consolaVariables);
 		
 		
@@ -153,7 +192,7 @@ public class Principal extends JFrame {
 		this.consolas = new TabWindow();
 		this.consolas.addTab(consolaView);
 		this.consolas.addTab(consolaErroresView);
-		this.consolas.addTab(consolaSQLView);
+		this.consolas.addTab(consultaView);
 		this.consolas.addTab(consolaVariables);
 		this.consolas.getWindowProperties().setCloseEnabled(false);
 		this.consolas.getWindowProperties().setUndockEnabled(false);
@@ -218,9 +257,13 @@ public class Principal extends JFrame {
 	}
 
 	void crearJToolbar() {
-		BarraHerramientas barra = new BarraHerramientas(this);
+		BarraHerramientas barra = new BarraHerramientas(this, this.conexion);
 		this.getContentPane().add(barra, BorderLayout.NORTH);
 		barra.setFloatable(false);
+	}
+	
+	void crearBarradeEstado() {
+		getContentPane().add(barraEstado, java.awt.BorderLayout.SOUTH);
 	}
 
 }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,6 +27,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
@@ -35,19 +37,22 @@ import javax.swing.text.BadLocationException;
 import org.fife.ui.rtextarea.GutterIconInfo;
 import org.uso.depurador.main.Main;
 import org.uso.depurador.main.Principal;
+import org.uso.depurador.utlidades.Imprimir;
+import org.uso.depurador.utlidades.Utilidades;
 
 import javafx.stage.FileChooser;
+import net.infonode.docking.View;
 import net.infonode.tabbedpanel.titledtab.TitledTab;
 
 public class BarraHerramientas extends JToolBar implements ActionListener {
 
 	/* Elementos de la barra de tareas */
-	private JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener;
+	private JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener, ejecutarSQL;
 
 	/* Ventana */
 	private Principal ventana;
 
-	public BarraHerramientas(Principal ventana) {
+	public BarraHerramientas(Principal ventana, Connection con) {
 		this.ventana = ventana;
 
 		this.nuevo = new JButton();
@@ -84,6 +89,9 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		detener.setToolTipText("Detener depuración");
 		this.detener.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/stop2.png")));
 
+		this.ejecutarSQL = new JButton();
+		this.ejecutarSQL.setToolTipText("Ejecutar sentencia SQL");
+		this.ejecutarSQL.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/lightning.png")));
 		
 		guardar.addActionListener(new ActionListener() {
 
@@ -115,13 +123,34 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.addSeparator();
 		this.add(buscar);
 		this.addSeparator();
+		this.add(ejecutarSQL);
 
 		// asignación de eventos a elementos de la toolbar
 		this.play.addActionListener(this);
 		this.nuevo.addActionListener(this);
 		this.abrir.addActionListener(this);
 		this.guardar.addActionListener(this);
+		this.ejecutarSQL.addActionListener(this);
 		
+	}
+	
+	void ejecutarSQL() {
+		String sql = ventana.editor.getSelectedText();
+		Statement sentencia = null;
+		try {
+			sentencia = ventana.conexion.createStatement();
+			boolean tipo = sentencia.execute(sql);
+			if(tipo) {
+				Utilidades utilidades = new Utilidades();
+				utilidades.consultar(sql, ventana);
+			} else {
+				//System.out.println("Es una DML.");
+			}
+			ventana.consolas.setSelectedTab(2);
+		} catch (Exception ex) {
+			Imprimir.imprimirConsola(ventana.consolaErrores, ex.getMessage());
+			ventana.consolas.setSelectedTab(1);
+		}
 	}
 
 	void ejecutar() {
@@ -519,6 +548,8 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			abrir();
 		} else if (e.getSource() == this.guardar) {
 			guardar();
+		} else if (e.getSource() == this.ejecutarSQL) {
+			ejecutarSQL();
 		}
 	}
 }
