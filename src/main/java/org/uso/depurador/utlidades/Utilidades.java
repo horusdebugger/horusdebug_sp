@@ -94,7 +94,7 @@ public class Utilidades {
 			
 			modelo.setRowCount(0);
 			
-			Statement sentencia = principal.conexion.createStatement();
+			Statement sentencia = principal.conexion.getConexion().createStatement();
 			ResultSet resultados = sentencia.executeQuery(sql);
 			
 			ResultSetMetaData metadata = resultados.getMetaData();
@@ -125,6 +125,7 @@ public class Utilidades {
 			for(int i = 0; i<columnasNombres.length; i++) {
 				principal.tablaConsultas.getColumnModel().getColumn(i).setPreferredWidth(250);
 			}
+			principal.consolas.setSelectedTab(2);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

@@ -40,6 +40,7 @@ import org.uso.depurador.componentes.Editor;
 import org.uso.depurador.componentes.Menu;
 import org.uso.depurador.componentes.ScrollEditor;
 import org.uso.depurador.componentes.arbol.BDArbol;
+import org.uso.depurador.conexion.Conexion;
 import org.uso.depurador.utlidades.Utilidades;
 import org.uso.depurador.componentes.Parametro;
 import org.uso.depurador.componentes.PopMenuConsolasListener;
@@ -87,7 +88,7 @@ public class Principal extends JFrame {
 	public TitledTab pestanaDebug;
 	public TitledTab pestanaEditor;
 	// conexion
-	public Connection conexion;
+	public Conexion conexion;
 	public ScrollEditor scrollEditor;
 	public ScrollEditor scrollEditorDebug;
 	public Editor editor;
@@ -114,8 +115,12 @@ public class Principal extends JFrame {
 	// Textareas de consolas
 	public JTextArea consola = new JTextArea();
 	public JTextArea consolaErrores = new JTextArea();
-	public Principal(Connection c) {
+	// arbol
+	public BDArbol arbolBD;
+	// conexion
+	public Principal(Conexion c) {
 		this.conexion = c;
+		this.arbolBD = new BDArbol(this);
 		crearJMenuBar();
 		crearJToolbar();
 		crearDocks();
@@ -136,7 +141,7 @@ public class Principal extends JFrame {
 
 	void crearDocks() {
 		
-		this.bdView = new View("Bases de datos", null, new JScrollPane(new BDArbol(conexion,this)));
+		this.bdView = new View("Bases de datos", null, new JScrollPane(this.arbolBD));
 		this.bdView.getWindowProperties().setCloseEnabled(false);
 		this.bdView.getWindowProperties().setUndockEnabled(false);
 		this.consola.setEditable(false);
@@ -257,7 +262,7 @@ public class Principal extends JFrame {
 	}
 
 	void crearJToolbar() {
-		BarraHerramientas barra = new BarraHerramientas(this, this.conexion);
+		BarraHerramientas barra = new BarraHerramientas(this);
 		this.getContentPane().add(barra, BorderLayout.NORTH);
 		barra.setFloatable(false);
 	}

@@ -24,8 +24,10 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -47,12 +49,13 @@ import net.infonode.tabbedpanel.titledtab.TitledTab;
 public class BarraHerramientas extends JToolBar implements ActionListener {
 
 	/* Elementos de la barra de tareas */
-	private JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener, ejecutarSQL;
+	private JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener, ejecutarSQL, actualizar;
+	private JComboBox<String> bds;
 
 	/* Ventana */
 	private Principal ventana;
 
-	public BarraHerramientas(Principal ventana, Connection con) {
+	public BarraHerramientas(Principal ventana) {
 		this.ventana = ventana;
 
 		this.nuevo = new JButton();
@@ -68,7 +71,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		guardar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/disk.png")));
 
 		this.play = new JButton();
-		play.setToolTipText("Iniciar Depuración");
+		play.setToolTipText("Iniciar DepuraciÃ³n");
 		play.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_next.png")));
 
 		this.siguiente = new JButton();
@@ -77,7 +80,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_first.png")));
 
 		this.atras = new JButton();
-		atras.setToolTipText("Atrás");
+		atras.setToolTipText("AtrÃ¡s");
 		atras.setIcon(
 				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_last.png")));
 
@@ -86,12 +89,16 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		buscar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/find.png")));
 
 		this.detener = new JButton();
-		detener.setToolTipText("Detener depuración");
+		detener.setToolTipText("Detener depuraciÃ³n");
 		this.detener.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/stop2.png")));
 
 		this.ejecutarSQL = new JButton();
 		this.ejecutarSQL.setToolTipText("Ejecutar sentencia SQL");
 		this.ejecutarSQL.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/lightning.png")));
+		
+		this.actualizar = new JButton();
+		this.actualizar.setToolTipText("Actualizar interfaz");
+		this.actualizar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/arrow_refresh.png")));
 		
 		guardar.addActionListener(new ActionListener() {
 
@@ -115,6 +122,8 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.add(abrir);
 		this.add(guardar);
 		this.addSeparator();
+		this.add(actualizar);
+		this.addSeparator();
 		this.add(play);
 		this.add(detener);
 		this.detener.setEnabled(false);
@@ -124,13 +133,53 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.add(buscar);
 		this.addSeparator();
 		this.add(ejecutarSQL);
+		this.addSeparator();
+		this.add(new JLabel("Conectado a: "));
+		
 
-		// asignación de eventos a elementos de la toolbar
+
+		// asignaciï¿½n de eventos a elementos de la toolbar
 		this.play.addActionListener(this);
 		this.nuevo.addActionListener(this);
 		this.abrir.addActionListener(this);
 		this.guardar.addActionListener(this);
 		this.ejecutarSQL.addActionListener(this);
+		this.actualizar.addActionListener(this);
+		
+		
+		llenarBDS();
+
+	}
+	
+	void llenarBDS(){
+		this.bds = new JComboBox<>();
+		this.bds.setMaximumSize(new Dimension(200, 100));
+		try {
+			Statement sentencia = ventana.conexion.getConexion().createStatement();
+			ResultSet result = sentencia.executeQuery("show databases");
+			bds.addItem("");
+			while(result.next()) {
+				bds.addItem(result.getString("Database"));
+			}
+			result.close();
+			bds.setSelectedItem(ventana.conexion.getConexion().getCatalog());
+			System.out.println(ventana.conexion.getConexion().getCatalog());
+		} catch (SQLException e) {
+			Imprimir.imprimirConsolaError(ventana.consolaErrores, e.getMessage());
+			e.printStackTrace();
+		}
+		this.bds.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//ventana.conexion.cerrarConexion();
+				ventana.conexion.setBd(((JComboBox<String>)e.getSource()).getSelectedItem().toString());
+				ventana.conexion.conectar();
+			}
+		});
+		
+		
+		this.add(this.bds);
 		
 	}
 	
@@ -138,15 +187,15 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		String sql = ventana.editor.getSelectedText();
 		Statement sentencia = null;
 		try {
-			sentencia = ventana.conexion.createStatement();
+			sentencia = ventana.conexion.getConexion().createStatement();
 			boolean tipo = sentencia.execute(sql);
 			if(tipo) {
 				Utilidades utilidades = new Utilidades();
 				utilidades.consultar(sql, ventana);
 			} else {
-				//System.out.println("Es una DML.");
+				Imprimir.imprimirConsola(ventana.consola, "Sentencia SQL ejecutada correctamente.");
+				ventana.consolas.setSelectedTab(0);
 			}
-			ventana.consolas.setSelectedTab(2);
 		} catch (Exception ex) {
 			Imprimir.imprimirConsola(ventana.consolaErrores, ex.getMessage());
 			ventana.consolas.setSelectedTab(1);
@@ -158,7 +207,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		ventana.parametros = new ArrayList<>();
 		
 		try {
-			Statement stmt = ventana.conexion.createStatement();
+			Statement stmt = ventana.conexion.getConexion().createStatement();
             ResultSet rs;
  
             rs = stmt.executeQuery("SELECT PARAMETER_NAME, DATA_TYPE FROM information_schema.parameters "
@@ -241,7 +290,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 	void nuevo() {
 		if (this.ventana.control) {
 			int resultado = JOptionPane.showConfirmDialog(this.ventana,
-					"Hay cambios sin guardar. Desea guardar los cambios?.", "Información", JOptionPane.YES_NO_OPTION,
+					"Hay cambios sin guardar. Desea guardar los cambios?.", "Informaciï¿½n", JOptionPane.YES_NO_OPTION,
 					JOptionPane.WARNING_MESSAGE);
 			if (resultado == JOptionPane.YES_OPTION) {
 				if (this.ventana.archivo != null) {
@@ -318,7 +367,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			switch (control_temp) {
 			case 1: {
 				int opcion1 = JOptionPane.showConfirmDialog(ventana,
-						"Hay cambios sin guardar. Desea guardar los cambios?.", "Información",
+						"Hay cambios sin guardar. Desea guardar los cambios?.", "Informaciï¿½n",
 						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
 				switch (opcion1) {
@@ -550,6 +599,8 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			guardar();
 		} else if (e.getSource() == this.ejecutarSQL) {
 			ejecutarSQL();
+		} else if (e.getSource() == this.actualizar) {
+			ventana.arbolBD.llenarArbol();
 		}
 	}
 }

@@ -22,7 +22,9 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
 import org.uso.depurador.componentes.ScrollEditor;
+import org.uso.depurador.conexion.Conexion;
 import org.uso.depurador.main.Principal;
+import org.uso.depurador.utlidades.Imprimir;
 
 import com.mysql.jdbc.DatabaseMetaData;
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
@@ -41,16 +43,13 @@ public class BDArbol extends JTree {
 	private ImageIcon procIcon = new ImageIcon(
 			getClass().getResource("/org/uso/depurador/componentes/iconos/table_gear.png"));
 
-	Connection conn;
-
 	ArrayList<BD> bds = new ArrayList<>();
 
 	Principal ventana;
 
-	public BDArbol(Connection conn, Principal principal) { 
+	public BDArbol(Principal principal) { 
 		this.ventana = principal;
-		this.conn = conn;
-
+		/*
 			try {
 				//DatabaseMetaData meta = (DatabaseMetaData) this.conn.getMetaData();
 				System.out.println(conn.getCatalog());
@@ -58,7 +57,7 @@ public class BDArbol extends JTree {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
+		*/
 
 		this.setCellRenderer(new MyTreeCellRenderer());
 
@@ -76,10 +75,8 @@ public class BDArbol extends JTree {
 					if (node == null)
 						return;
 					Object padre = node.getParent().toString();
-					System.out.println(padre.toString());
-					System.out.print(node.getUserObject().toString());
 					try {
-					Statement stmt = conn.createStatement();
+					Statement stmt = ventana.conexion.getConexion().createStatement();
 		            ResultSet rs;
 		 
 		            rs = stmt.executeQuery("SHOW CREATE PROCEDURE `"+padre.toString()+"`.`"+node.getUserObject().toString()+"`");
@@ -129,7 +126,7 @@ public class BDArbol extends JTree {
 		root.setNombre("mysql");
 		root.setIcono(servidorIcon);
 		try {
-			Statement stmt = this.conn.createStatement();
+			Statement stmt = ventana.conexion.getConexion().createStatement();
 			ResultSet rs = stmt.executeQuery("show databases");
 
 			while (rs.next()) {
@@ -153,7 +150,7 @@ public class BDArbol extends JTree {
 				 * tabla.setNombre(rs2.getString("TABLE_NAME"));
 				 * tablas.add(tabla); }
 				 */
-				Statement stmt3 = this.conn.createStatement();
+				Statement stmt3 = ventana.conexion.getConexion().createStatement();
 				ResultSet rs3 = stmt3.executeQuery("SHOW PROCEDURE STATUS WHERE db = '" + bd.getNombre() + "'");
 				ArrayList<BDProc> procs = new ArrayList<>();
 				while (rs3.next()) {
@@ -194,7 +191,7 @@ public class BDArbol extends JTree {
 			DefaultTreeModel modelo = new DefaultTreeModel(raiz);
 			this.setModel(modelo);
 		} catch (Exception ex) {
-
+			Imprimir.imprimirConsolaError(ventana.consolaErrores, ex.getMessage());
 		}
 	}
 

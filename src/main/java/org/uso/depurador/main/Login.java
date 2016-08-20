@@ -158,14 +158,14 @@ public class Login extends JFrame {
 				try {
 					Conexion c = new Conexion(txtHost.getText(), txtUsuario.getText(),
 							String.valueOf(txtPass.getPassword()), txtPort.getText(), "");
-					java.sql.Connection cn = c.getConexion();
-					Statement sm = (Statement) cn.createStatement();
+					c.conectar();
+					Statement sm = (Statement) c.getConexion().createStatement();
 					ResultSet rs = sm.executeQuery("show databases");
 
 					while (rs.next()) {
 						txtDb.addItem(rs.getString("Database"));
 					}
-					cn.close();
+					c.cerrarConexion();
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -194,9 +194,9 @@ public class Login extends JFrame {
 				String txtDB = txtDb.getSelectedItem().toString();
 				Conexion c = new Conexion(txtHost.getText(), txtUsuario.getText(),
 						String.valueOf(txtPass.getPassword()), txtPort.getText(), txtDB);
-				java.sql.Connection cn = c.getConexion();
-				if (cn != null) {
-					Principal main = new Principal(cn);
+				c.conectar();
+				if (c.getConexion() != null) {
+					Principal main = new Principal(c);
 					dispose();
 				} else {
 					JOptionPane.showMessageDialog(Login.this, "No se pudo conectar a MySQL. :(", "ERROR!",
@@ -215,20 +215,13 @@ public class Login extends JFrame {
 				String txtDB = txtDb.getSelectedItem().toString();
 				Conexion c = new Conexion(txtHost.getText(), txtUsuario.getText(),
 						String.valueOf(txtPass.getPassword()), txtPort.getText(), txtDB);
-				java.sql.Connection cn = c.getConexion();
-				if (cn != null) {
+				if (c.probarConexion()) {
 
-					JOptionPane.showMessageDialog(Login.this, "Conexión exitosa!.", "EXITO!",
+					JOptionPane.showMessageDialog(Login.this, "ConexiÃ³n exitosa!.", "EXITO!",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
 					JOptionPane.showMessageDialog(Login.this, "No se pudo conectar a MySQL. :(", "ERROR!",
 							JOptionPane.ERROR_MESSAGE);
-				}
-				try {
-					cn.close();
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
 				}
 			}
 		});
@@ -238,7 +231,7 @@ public class Login extends JFrame {
 
 		JPanel panel = new JPanel();
 		panel.setBackground(new Color(204, 204, 204));
-		panel.setBounds(0, 0, 466, 102);
+		panel.setBounds(0, 0, 476, 102);
 		contentPane.add(panel);
 		panel.setLayout(null);
 

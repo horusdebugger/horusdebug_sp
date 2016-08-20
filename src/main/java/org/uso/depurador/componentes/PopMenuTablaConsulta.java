@@ -3,6 +3,8 @@ package org.uso.depurador.componentes;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.swing.ImageIcon;
@@ -21,34 +23,33 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.uso.depurador.main.Principal;
 import org.uso.depurador.utlidades.Imprimir;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.cedarsoftware.util.io.JsonWriter;
+
 public class PopMenuTablaConsulta extends JPopupMenu implements ActionListener {
 
 	private JMenuItem limpiar;
 	private JMenuItem guardar;
-	private JMenuItem guardarAJSON;
 	private JTable tabla;
 	private Principal principal;
 
 	public PopMenuTablaConsulta(Principal principal, JTable tabla) {
 		this.limpiar = new JMenuItem("Limpiar tabla");
 		this.limpiar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/draft.png")));
-		this.guardar = new JMenuItem("Guardar tabla en XML");
-		this.guardar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/xml.png")));
-		this.guardarAJSON = new JMenuItem("Guardar tabla en JSON");
-		this.guardarAJSON.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/json.png")));
+		this.guardar = new JMenuItem("Guardar tabla");
+		this.guardar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/disk.png")));
 		this.tabla = tabla;
 		this.limpiar.addActionListener(this);
 		this.guardar.addActionListener(this);
-		this.guardarAJSON.addActionListener(this);
 		this.add(this.limpiar);
 		this.add(this.guardar);
-		this.add(this.guardarAJSON);
 		this.principal = principal;
 	}
 
@@ -60,7 +61,9 @@ public class PopMenuTablaConsulta extends JPopupMenu implements ActionListener {
 			((DefaultTableModel) principal.tablaConsultas.getModel()).setColumnIdentifiers(new Object[] {});
 		} else if (e.getSource() == guardar) {
 			JFileChooser archivo = new JFileChooser();
-			archivo.setFileFilter(new FileNameExtensionFilter("xml files (*.xml)", "xml"));
+			archivo.setAcceptAllFileFilterUsed(false);
+			archivo.addChoosableFileFilter(new FileNameExtensionFilter("Archivo XML (*.xml)",".xml" ,"xml"));
+			archivo.addChoosableFileFilter(new FileNameExtensionFilter("Archivo JSON (*.json)", ".json", "json"));
 			int result = archivo.showSaveDialog(null);
 			switch (result) {
 			case JFileChooser.APPROVE_OPTION: {
@@ -106,8 +109,28 @@ public class PopMenuTablaConsulta extends JPopupMenu implements ActionListener {
 					} catch (Exception ex) {
 						Imprimir.imprimirConsolaError(principal.consolaErrores, ex.getMessage());
 					}
-				} else {
-					
+				} else if(archivo.getSelectedFile().getName().substring(archivo.getSelectedFile().getName().lastIndexOf("."),
+						archivo.getSelectedFile().getName().length()).equals(".json")) {
+						JSONObject obj = new JSONObject();
+						JSONArray registros = new JSONArray();
+						for(int i = 0; i < principal.tablaConsultas.getRowCount(); i++) {
+							JSONObject elemento = new JSONObject();
+							for(int j = 0; j < principal.tablaConsultas.getColumnCount(); j++) {
+								elemento.put(principal.tablaConsultas.getColumnName(j), principal.tablaConsultas.getValueAt(i, j).toString());
+							}
+							registros.add(elemento);
+						}
+						obj.put("registros", registros);
+						try {
+
+							FileWriter file = new FileWriter(archivo.getSelectedFile().getAbsolutePath());
+							file.write(JsonWriter.formatJson(obj.toJSONString()));
+							file.flush();
+							file.close();
+							Imprimir.imprimirConsola(principal.consola, "Archivo json guardado correctamente en "+archivo.getSelectedFile().getAbsolutePath());
+						} catch (IOException ex) {
+							Imprimir.imprimirConsolaError(principal.consolaErrores, "Ha ocurrido un error guardando el archivo json. => "+ex.getMessage());
+						}
 				}
 				} catch(Exception ex) {
 					Imprimir.imprimirConsolaError(principal.consolaErrores, "Solo se permiten archivo con extensión .xml o .json.");
@@ -115,17 +138,15 @@ public class PopMenuTablaConsulta extends JPopupMenu implements ActionListener {
 				break;
 			}
 			case JFileChooser.CANCEL_OPTION: {
-				Imprimir.imprimirConsolaError(principal.consola, "Cancelando guardado de tabla de consulta.");
+				Imprimir.imprimirConsolaError(principal.consola, "Cancelado guardado de tabla de consulta.");
 				break;
 			}
 			default: {
-				Imprimir.imprimirConsolaError(principal.consola, "Cancelando guardado de tabla de consulta.");
+				Imprimir.imprimirConsolaError(principal.consola, "Cancelado guardado de tabla de consulta.");
 				break;
 			}
 			}
-		} else if (e.getSource() == this.guardarAJSON) {
-			
-		}
+		} 
 
 	}
 
