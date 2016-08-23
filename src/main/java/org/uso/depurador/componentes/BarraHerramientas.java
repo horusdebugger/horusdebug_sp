@@ -37,6 +37,7 @@ import javax.swing.border.Border;
 import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rtextarea.GutterIconInfo;
+import org.uso.depurador.Depuracion;
 import org.uso.depurador.main.Main;
 import org.uso.depurador.main.Principal;
 import org.uso.depurador.utlidades.Imprimir;
@@ -134,11 +135,11 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.addSeparator();
 		this.add(ejecutarSQL);
 		this.addSeparator();
-		this.add(new JLabel("Conectado a: "));
+		this.add(new JLabel("Conectado a:  "));
 		
 
 
-		// asignaciï¿½n de eventos a elementos de la toolbar
+		// asignación de eventos a elementos de la toolbar
 		this.play.addActionListener(this);
 		this.nuevo.addActionListener(this);
 		this.abrir.addActionListener(this);
@@ -205,13 +206,14 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 	void ejecutar() {
 		
 		ventana.parametros = new ArrayList<>();
+		ventana.editores.setSelectedTab(ventana.pestanaDebug);
 		
 		try {
 			Statement stmt = ventana.conexion.getConexion().createStatement();
             ResultSet rs;
  
             rs = stmt.executeQuery("SELECT PARAMETER_NAME, DATA_TYPE FROM information_schema.parameters "
-            		+ "WHERE SPECIFIC_NAME = '"+ventana.procedimiento_barra+"'");
+            		+ "WHERE SPECIFIC_NAME = '"+ventana.procedimiento_bd+"'");
             while ( rs.next() ) {
             	Parametro p = new Parametro();
             	p.setNombre(rs.getString("PARAMETER_NAME"));
@@ -220,6 +222,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
             }
             rs.close();
             pedirDatos(ventana.parametros);
+            ventana.depurar = new Depuracion(ventana);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}

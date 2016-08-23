@@ -11,7 +11,7 @@ public class ScrollEditor extends RTextScrollPane {
 		super(editor, lineNumber);
 		this.setFoldIndicatorEnabled(true);
 		this.setIconRowHeaderEnabled(true);
-		this.getGutter().setBookmarkingEnabled(true);
+		//this.getGutter().setBookmarkingEnabled(true);
 		this.getGutter().setBookmarkIcon(new ImageIcon("breakpoint.png"));
 	}
 

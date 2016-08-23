@@ -10,6 +10,12 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.print.Book;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -34,6 +40,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 
+import org.fife.ui.rtextarea.Gutter;
+import org.fife.ui.rtextarea.GutterIconInfo;
+import org.uso.depurador.Depuracion;
 import org.uso.depurador.componentes.BarraDeEstado;
 import org.uso.depurador.componentes.BarraHerramientas;
 import org.uso.depurador.componentes.Editor;
@@ -66,6 +75,8 @@ import net.infonode.tabbedpanel.titledtab.TitledTab;
 import net.infonode.util.Direction;
 
 public class Principal extends JFrame {
+	
+	public Depuracion depurar;
 
 	// Vetanas dock
 	private View bdView;
@@ -98,8 +109,8 @@ public class Principal extends JFrame {
 	// control de archivo
 	public boolean control = false;
 	// procedimiento
-	public String procedimiento = "";
-	public String procedimiento_barra = ""; 
+	public String procedimiento = null;
+	public String procedimiento_bd = null; 
 	//parametros
 	public List<Parametro> parametros = null;
 	//tablas
@@ -204,10 +215,12 @@ public class Principal extends JFrame {
 		this.consolas.setSelectedTab(0);
 		
 		this.editor = new Editor();
+		
 		this.editorDebug = new Editor();
 		this.scrollEditor = new ScrollEditor(editor, true);
+	
 		this.scrollEditorDebug = new ScrollEditor(editorDebug, true);
-
+		
 		this.pestanaEditor = new TitledTab("Nuevo", null, scrollEditor, null);
 		this.editores.addTab(this.pestanaEditor);
 		
@@ -245,7 +258,7 @@ public class Principal extends JFrame {
 		});
 		
 		
-		
+	
 		
 		
 	}

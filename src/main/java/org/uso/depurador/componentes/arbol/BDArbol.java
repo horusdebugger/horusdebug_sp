@@ -107,7 +107,7 @@ public class BDArbol extends JTree {
 	                ventana.editores.addTab(ventana.pestanaDebug);
 		            
 		            ventana.procedimiento = "`"+padre.toString()+"`.`"+node.getUserObject().toString()+"`";
-		            ventana.procedimiento_barra = node.getUserObject().toString();
+		            ventana.procedimiento_bd = node.getUserObject().toString();
 		            ventana.editores.setSelectedTab(ventana.pestanaDebug);
 					} catch (Exception ex) {
 						ex.printStackTrace();
