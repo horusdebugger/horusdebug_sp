@@ -1,0 +1,12 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento4`(in nombre varchar(50))
+begin
+	declare n1 int;
+	declare n2 int;
+	select * from persona;
+	select *
+	from
+	persona;
+
+	set n1 = 10;
+	
+end

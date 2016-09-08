@@ -1,5 +1,6 @@
 package org.uso.depurador.componentes;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,7 +51,7 @@ import net.infonode.tabbedpanel.titledtab.TitledTab;
 public class BarraHerramientas extends JToolBar implements ActionListener {
 
 	/* Elementos de la barra de tareas */
-	private JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener, ejecutarSQL, actualizar;
+	public JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener, ejecutarSQL, actualizar, play_pausado;
 	private JComboBox<String> bds;
 
 	/* Ventana */
@@ -78,12 +79,12 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.siguiente = new JButton();
 		siguiente.setToolTipText("Siguiente");
 		siguiente.setIcon(
-				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_first.png")));
+				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_last.png")));
 
 		this.atras = new JButton();
 		atras.setToolTipText("Atr√°s");
 		atras.setIcon(
-				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_last.png")));
+				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_first.png")));
 
 		this.buscar = new JButton();
 		buscar.setToolTipText("Buscar en el documento");
@@ -101,24 +102,10 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.actualizar.setToolTipText("Actualizar interfaz");
 		this.actualizar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/arrow_refresh.png")));
 		
-		guardar.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				/*
-				 * GutterIconInfo[] icons =
-				 * ventana.scrollPane.getGutter().getBookmarks(); for (int i =
-				 * 0; i < icons.length; i++) { Icon icon = icons[i].getIcon();
-				 * int offset = icons[i].getMarkedOffset(); try {
-				 * System.out.println(ventana.editor.getLineOfOffset(offset)); }
-				 * catch (BadLocationException e1) { // TODO Auto-generated
-				 * catch block e1.printStackTrace(); } }
-				 */
-
-			}
-		});
-
+		this.play_pausado = new JButton();
+		this.play_pausado.setToolTipText("Ejecutar paso a paso");
+		this.play_pausado.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/clock_play.png")));
+		
 		this.add(nuevo);
 		this.add(abrir);
 		this.add(guardar);
@@ -126,10 +113,11 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.add(actualizar);
 		this.addSeparator();
 		this.add(play);
+		this.add(play_pausado);
 		this.add(detener);
 		this.detener.setEnabled(false);
-		this.add(siguiente);
 		this.add(atras);
+		this.add(siguiente);
 		this.addSeparator();
 		this.add(buscar);
 		this.addSeparator();
@@ -137,8 +125,6 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.addSeparator();
 		this.add(new JLabel("Conectado a:  "));
 		
-
-
 		// asignaciÛn de eventos a elementos de la toolbar
 		this.play.addActionListener(this);
 		this.nuevo.addActionListener(this);
@@ -146,9 +132,17 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.guardar.addActionListener(this);
 		this.ejecutarSQL.addActionListener(this);
 		this.actualizar.addActionListener(this);
-		
+		this.play_pausado.addActionListener(this);
+		this.detener.addActionListener(this);
+		this.siguiente.addActionListener(this);
+		this.atras.addActionListener(this);
 		
 		llenarBDS();
+		
+		this.play.setEnabled(false);
+		this.play_pausado.setEnabled(false);
+		this.siguiente.setEnabled(false);
+		this.atras.setEnabled(false);
 
 	}
 	
@@ -205,7 +199,8 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 
 	void ejecutar() {
 		
-		ventana.parametros = new ArrayList<>();
+		List<Parametro> parametros = new ArrayList<>();
+		
 		ventana.editores.setSelectedTab(ventana.pestanaDebug);
 		
 		try {
@@ -218,76 +213,63 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
             	Parametro p = new Parametro();
             	p.setNombre(rs.getString("PARAMETER_NAME"));
             	p.setTipo(rs.getString("DATA_TYPE"));
-            	ventana.parametros.add(p);
+            	parametros.add(p);
             }
             rs.close();
-            pedirDatos(ventana.parametros);
-            ventana.depurar = new Depuracion(ventana);
+            pedirDatos(parametros);
+            ventana.depurador = new Depuracion(ventana);
+            ventana.depurador.setParametros(parametros);
+            ventana.depurador.iniciarDepuracion();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
+		for(int i =0; i<parametros.size(); i++) {
+			System.out.println("Nombre: "+parametros.get(i).getNombre());
+			System.out.println("Tipo: "+parametros.get(i).getTipo());
+			System.out.println("Valor: "+parametros.get(i).getValor());
+		}
 		
-		/*try {
-			PrintWriter writer = null;
-
-			writer = new PrintWriter("temp", "UTF-8");
-
-			// writer.print(ventana.editor.getText());
-			writer.close();
-
-			Runtime rt = Runtime.getRuntime();
-			String[] commands = { "sql.exe", "temp" };
-			Process proc = null;
-
-			proc = rt.exec(commands);
-
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-
-			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-
-			System.out.println("Salida del programa:\n");
-			try {
-				String salida = null;
-				String mensajes = "";
-				while ((salida = stdInput.readLine()) != null) {
-					mensajes += salida + "\n";
-				}
-				if (!mensajes.equals("")) {
-					// ventana.consolaNormal.setText(mensajes);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			System.out.println("Errores del programa:\n");
-			try {
-				String err = null;
-				String errores = "";
-				while ((err = stdError.readLine()) != null) {
-					errores += err + "\n";
-					System.err.println(err);
-				}
-				if (!errores.equals("")) {
-					// ventana.consolaErrores.setText(errores);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}*/
 	}
-
+	
 	void pedirDatos(List<Parametro> listado) {
+		
 		for(int i =0; i<listado.size(); i++) {
-			String valor = JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\n Identificador: "+listado.get(i).getNombre()+"\n Tipo: "+listado.get(i).getTipo());
-			ventana.parametros.get(i).setValor(valor);
+			String valor = JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\nIdentificador: "+listado.get(i).getNombre()+"\nTipo: "+listado.get(i).getTipo());
+			listado.get(i).setValor(valor);
 		}
-		for(int i =0; i<listado.size(); i++) {
-			System.out.println("Nombre: "+listado.get(i).getNombre());
-			System.out.println("Tipo: "+listado.get(i).getTipo());
-			System.out.println("Valor: "+listado.get(i).getValor());
-		}
+	}
+	
+	void ejecutarPausado() {
+		List<Parametro> parametros = new ArrayList<>();
+		
+		ventana.editores.setSelectedTab(ventana.pestanaDebug);
+		
+		try {
+			Statement stmt = ventana.conexion.getConexion().createStatement();
+            ResultSet rs;
+ 
+            rs = stmt.executeQuery("SELECT PARAMETER_NAME, DATA_TYPE FROM information_schema.parameters "
+            		+ "WHERE SPECIFIC_NAME = '"+ventana.procedimiento_bd+"'");
+            while ( rs.next() ) {
+            	Parametro p = new Parametro();
+            	p.setNombre(rs.getString("PARAMETER_NAME"));
+            	p.setTipo(rs.getString("DATA_TYPE"));
+            	parametros.add(p);
+            }
+            rs.close();
+            pedirDatos(parametros);
+            ventana.depurador = new Depuracion(ventana);
+            ventana.depurador.setParametros(parametros);
+            ventana.depurador.iniciarDepuracionPausada();
+            ventana.editorDebug.requestFocusInWindow();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		/*for(int i =0; i<parametros.size(); i++) {
+			System.out.println("Nombre: "+parametros.get(i).getNombre());
+			System.out.println("Tipo: "+parametros.get(i).getTipo());
+			System.out.println("Valor: "+parametros.get(i).getValor());
+		}*/
 	}
 	
 	void nuevo() {
@@ -604,6 +586,20 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			ejecutarSQL();
 		} else if (e.getSource() == this.actualizar) {
 			ventana.arbolBD.llenarArbol();
+		} else if (e.getSource() == this.play_pausado) {
+			ejecutarPausado();
+		} else if (e.getSource() == this.detener) {
+			siguiente.setEnabled(false);
+			atras.setEnabled(false);
+			detener.setEnabled(false);
+			play.setEnabled(true);
+			play_pausado.setEnabled(true);
+			ventana.editorDebug.setBackground(Color.white);
+			ventana.editorDebug.setCaretPosition(ventana.editorDebug.getText().length());
+		} else if(e.getSource() == this.siguiente) {
+			ventana.depurador.siguiente();
+		} else if(e.getSource() == this.atras) {
+			ventana.depurador.atras();
 		}
 	}
 }

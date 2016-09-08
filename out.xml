@@ -1,0 +1,18 @@
+<?xml version='1.0'?>
+<variables>
+<variable>
+<nombre>nombre</nombre>
+<tipo>varchar</tipo>
+<valor>adasd</valor>
+</variable>
+<variable>
+<nombre>n2</nombre>
+<tipo>int</tipo>
+<valor>0</valor>
+</variable>
+<variable>
+<nombre>n1</nombre>
+<tipo>int</tipo>
+<valor>10</valor>
+</variable>
+</variables>

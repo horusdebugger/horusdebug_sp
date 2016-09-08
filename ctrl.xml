@@ -1,0 +1,8 @@
+<?xml version='1.0'?>
+<procedimiento inicio="1" begin="2" end="12" >
+<sentencia id="1" tipo="declaracion" inicio="3" final="3" valor="" />
+<sentencia id="2" tipo="declaracion" inicio="4" final="4" valor="" />
+<sentencia id="3" tipo="consulta" inicio="5" final="5" valor="" />
+<sentencia id="4" tipo="consulta" inicio="6" final="8" valor="" />
+<sentencia id="5" tipo="asignacion" inicio="10" final="10" valor="" />
+</procedimiento>

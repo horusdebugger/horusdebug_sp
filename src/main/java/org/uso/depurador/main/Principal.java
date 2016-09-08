@@ -70,14 +70,17 @@ import net.infonode.docking.theme.ShapedGradientDockingTheme;
 import net.infonode.docking.util.DockingUtil;
 import net.infonode.docking.util.PropertiesUtil;
 import net.infonode.docking.util.ViewMap;
+import net.infonode.tabbedpanel.TabDragEvent;
+import net.infonode.tabbedpanel.TabEvent;
+import net.infonode.tabbedpanel.TabListener;
+import net.infonode.tabbedpanel.TabRemovedEvent;
+import net.infonode.tabbedpanel.TabStateChangedEvent;
 import net.infonode.tabbedpanel.TabbedPanel;
 import net.infonode.tabbedpanel.titledtab.TitledTab;
 import net.infonode.util.Direction;
 
 public class Principal extends JFrame {
 	
-	public Depuracion depurar;
-
 	// Vetanas dock
 	private View bdView;
 	private View consolaView;
@@ -111,8 +114,8 @@ public class Principal extends JFrame {
 	// procedimiento
 	public String procedimiento = null;
 	public String procedimiento_bd = null; 
-	//parametros
-	public List<Parametro> parametros = null;
+	//barra de herramientas
+	public BarraHerramientas barra;
 	//tablas
 	public JTable tablaConsultas = new JTable(new DefaultTableModel(){
 		@Override
@@ -129,6 +132,17 @@ public class Principal extends JFrame {
 	// arbol
 	public BDArbol arbolBD;
 	// conexion
+	public Depuracion depurador;
+	//tabla de variables
+	public JTable tablaVariables = new JTable(new DefaultTableModel(){
+		
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+		
+	});
 	public Principal(Conexion c) {
 		this.conexion = c;
 		this.arbolBD = new BDArbol(this);
@@ -152,6 +166,8 @@ public class Principal extends JFrame {
 
 	void crearDocks() {
 		
+		((DefaultTableModel)(this.tablaVariables.getModel())).setColumnIdentifiers(new Object[]{"<html><b>Nombre</b></html>", "<html><b>Tipo</b></html>", "<html><b>Valor</b></html>"});
+	
 		this.bdView = new View("Bases de datos", null, new JScrollPane(this.arbolBD));
 		this.bdView.getWindowProperties().setCloseEnabled(false);
 		this.bdView.getWindowProperties().setUndockEnabled(false);
@@ -177,8 +193,8 @@ public class Principal extends JFrame {
 		//this.consolaSQLView.getWindowProperties().setMinimizeEnabled(false);
 		this.consultaView.getWindowProperties().setUndockEnabled(false);
 		Utilidades util = new Utilidades();
-		util.LeerArchivoXML();
-		this.consolaVariables = new View("Variables", null, new JScrollPane(util.getTablaVariables()));
+		//util.LeerArchivoXML("variables.xml");
+		this.consolaVariables = new View("Variables", null, new JScrollPane(this.tablaVariables));
 		this.editores = new TabbedPanel();
 		this.editorView = new View("", null, editores);
 		this.editorView.getWindowProperties().setUndockEnabled(false);
@@ -223,6 +239,76 @@ public class Principal extends JFrame {
 		
 		this.pestanaEditor = new TitledTab("Nuevo", null, scrollEditor, null);
 		this.editores.addTab(this.pestanaEditor);
+		TabListener listener = new TabListener() {
+			
+			@Override
+			public void tabSelected(TabStateChangedEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void tabRemoved(TabRemovedEvent event) {
+				if(event.getTab() == pestanaDebug) {
+					barra.play.setEnabled(false);
+					barra.play_pausado.setEnabled(false);
+					barra.detener.setEnabled(false);
+					barra.siguiente.setEnabled(false);
+					barra.atras.setEnabled(false);
+					editorDebug.setBackground(Color.white);
+				}
+			}
+			
+			@Override
+			public void tabMoved(TabEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void tabHighlighted(TabStateChangedEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void tabDropped(TabDragEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void tabDragged(TabDragEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void tabDragAborted(TabEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void tabDeselected(TabStateChangedEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void tabDehighlighted(TabStateChangedEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void tabAdded(TabEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+		
+		editores.addTabListener(listener);
 		
 
 		SplitWindow editores_consolas = new SplitWindow(false, 0.6f, editorView, consolas);
@@ -275,7 +361,7 @@ public class Principal extends JFrame {
 	}
 
 	void crearJToolbar() {
-		BarraHerramientas barra = new BarraHerramientas(this);
+		this.barra = new BarraHerramientas(this);
 		this.getContentPane().add(barra, BorderLayout.NORTH);
 		barra.setFloatable(false);
 	}

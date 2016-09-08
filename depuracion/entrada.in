@@ -1,0 +1,12 @@
+CREATE DEFINER=`root`@`localhost`
+PROCEDURE `procedimiento`(in v varchar(255))
+	BEGIN 
+		DECLARE n1 INT;
+		DECLARE n2 INT;
+        set n1=21;
+		select
+			*
+		from table1
+		where id=n1;
+
+	END

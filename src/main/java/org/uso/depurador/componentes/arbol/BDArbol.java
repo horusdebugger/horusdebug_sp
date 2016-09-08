@@ -103,12 +103,14 @@ public class BDArbol extends JTree {
 		            }
 		            ventana.pestanaDebug = new TitledTab("Procedimiento: "+node.getUserObject().toString(), null, ventana.scrollEditorDebug, boton);
 	                ventana.editorDebug.setText(contenido);
-	                ventana.editorDebug.setEditable(false);
+	                //ventana.editorDebug.setEditable(false);
 	                ventana.editores.addTab(ventana.pestanaDebug);
 		            
 		            ventana.procedimiento = "`"+padre.toString()+"`.`"+node.getUserObject().toString()+"`";
 		            ventana.procedimiento_bd = node.getUserObject().toString();
 		            ventana.editores.setSelectedTab(ventana.pestanaDebug);
+		            ventana.barra.play.setEnabled(true);
+		            ventana.barra.play_pausado.setEnabled(true);
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}

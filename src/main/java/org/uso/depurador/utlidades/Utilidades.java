@@ -23,22 +23,17 @@ import org.w3c.dom.NodeList;
 public class Utilidades {
 	List<Variable> listado = new ArrayList<>();
 	
-	public void LeerArchivoXML() {
+	public void LeerArchivoXMLVariables(String nombreArchivo) {
 		try {
-			File fXmlFile = new File("variables.xml");
+			File fXmlFile = new File(nombreArchivo);
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
 
-			//optional, but recommended
-			//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
 			doc.getDocumentElement().normalize();
-
-			System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
 
 			NodeList nList = doc.getElementsByTagName("variable");
 
-			System.out.println("----------------------------");
 
 			for (int temp = 0; temp < nList.getLength(); temp++) {
 
@@ -62,9 +57,7 @@ public class Utilidades {
 		    }
 	}
 	
-	public JTable getTablaVariables() {
-		
-		JTable tabla = new JTable();
+	public void getTablaXMLVariables(JTable table) {
 		
 		DefaultTableModel modelo = new DefaultTableModel(){
 			@Override
@@ -78,13 +71,13 @@ public class Utilidades {
 		for(int i = 0; i<listado.size(); i++) {
 			modelo.addRow(new Object[]{listado.get(i).getNombre(), listado.get(i).getTipo(), listado.get(i).getValor()});
 		}
-		tabla.setModel(modelo);
-		tabla.getColumnModel().getColumn(0).setPreferredWidth(200);
-		tabla.getColumnModel().getColumn(1).setPreferredWidth(100);
-		tabla.getColumnModel().getColumn(2).setPreferredWidth(800);
-		System.out.println(tabla.getRowCount());
+		table.setModel(modelo);
+		modelo.fireTableDataChanged();
+		table.getColumnModel().getColumn(0).setPreferredWidth(200);
+		table.getColumnModel().getColumn(1).setPreferredWidth(100);
+		table.getColumnModel().getColumn(2).setPreferredWidth(800);
+		//System.out.println(table.getRowCount());
 		
-		return tabla;
 	}
 	
 	public void consultar(String sql, Principal principal) {
@@ -157,4 +150,5 @@ public class Utilidades {
 		
 	}
 
+	
 }

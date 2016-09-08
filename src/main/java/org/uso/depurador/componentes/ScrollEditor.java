@@ -1,8 +1,11 @@
 package org.uso.depurador.componentes;
 
+import java.awt.Color;
+
 import javax.swing.ImageIcon;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 public class ScrollEditor extends RTextScrollPane {
@@ -11,8 +14,10 @@ public class ScrollEditor extends RTextScrollPane {
 		super(editor, lineNumber);
 		this.setFoldIndicatorEnabled(true);
 		this.setIconRowHeaderEnabled(true);
-		//this.getGutter().setBookmarkingEnabled(true);
+		this.getGutter().setBookmarkingEnabled(true);
 		this.getGutter().setBookmarkIcon(new ImageIcon("breakpoint.png"));
+		Gutter g = new Gutter(editor);
+		g.setActiveLineRangeColor(Color.red);
 	}
 
 }
