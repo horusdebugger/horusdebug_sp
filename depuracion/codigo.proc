@@ -1,12 +1,15 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento4`(in nombre varchar(50))
-begin
-	declare n1 int;
-	declare n2 int;
-	select * from persona;
-	select *
-	from
-	persona;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(in v varchar(255))
+BEGIN 
+		DECLARE n1 INT;
+		DECLARE n2 INT;
+        set n1=21;
+		select
+			*
+		from table1
+		where id=n1;
 
-	set n1 = 10;
 	
-end
+
+	set n2 = 2;
+		set n1 = 25;
+	END

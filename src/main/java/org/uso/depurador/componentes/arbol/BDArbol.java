@@ -47,72 +47,76 @@ public class BDArbol extends JTree {
 
 	Principal ventana;
 
-	public BDArbol(Principal principal) { 
+	public BDArbol(Principal principal) {
 		this.ventana = principal;
 		/*
-			try {
-				//DatabaseMetaData meta = (DatabaseMetaData) this.conn.getMetaData();
-				System.out.println(conn.getCatalog());
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		*/
+		 * try { //DatabaseMetaData meta = (DatabaseMetaData)
+		 * this.conn.getMetaData(); System.out.println(conn.getCatalog()); }
+		 * catch (SQLException e1) { // TODO Auto-generated catch block
+		 * e1.printStackTrace(); }
+		 */
 
 		this.setCellRenderer(new MyTreeCellRenderer());
 
 		llenarArbol();
-		/*this.setSelectionRow(2);
-		DefaultMutableTreeNode node = (DefaultMutableTreeNode) BDArbol.this.getLastSelectedPathComponent();
-		((DefaultTreeModel) BDArbol.this.getModel()).nodeChanged(node);*/
+		/*
+		 * this.setSelectionRow(2); DefaultMutableTreeNode node =
+		 * (DefaultMutableTreeNode) BDArbol.this.getLastSelectedPathComponent();
+		 * ((DefaultTreeModel) BDArbol.this.getModel()).nodeChanged(node);
+		 */
 
 		this.addMouseListener(new MouseAdapter() {
-			
+
 			public void mouseClicked(MouseEvent e) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) BDArbol.this.getLastSelectedPathComponent();
 				((DefaultTreeModel) BDArbol.this.getModel()).nodeChanged(node);
-				if (e.getClickCount() == 2) {
-					if (node == null)
-						return;
-					Object padre = node.getParent().toString();
-					try {
-					Statement stmt = ventana.conexion.getConexion().createStatement();
-		            ResultSet rs;
-		 
-		            rs = stmt.executeQuery("SHOW CREATE PROCEDURE `"+padre.toString()+"`.`"+node.getUserObject().toString()+"`");
-		            String contenido = null;
-		            JButton boton = new JButton("<html><b>x</b></html>");
-	                boton.setOpaque(false);
-	                boton.setContentAreaFilled(false);
-	                boton.setBorderPainted(false);
-	                boton.addActionListener(new ActionListener() {
-						
-						@Override
-						public void actionPerformed(ActionEvent arg0) {
-							if(ventana.editores.getTabCount()>1) {
+				if (BDArbol.this.isEnabled()) {
+					if (e.getClickCount() == 2) {
+						if (node == null)
+							return;
+						Object padre = node.getParent().toString();
+						try {
+							Statement stmt = ventana.conexion.getConexion().createStatement();
+							ResultSet rs;
+
+							rs = stmt.executeQuery("SHOW CREATE PROCEDURE `" + padre.toString() + "`.`"
+									+ node.getUserObject().toString() + "`");
+							String contenido = null;
+							JButton boton = new JButton("<html><b>x</b></html>");
+							boton.setOpaque(false);
+							boton.setContentAreaFilled(false);
+							boton.setBorderPainted(false);
+							boton.addActionListener(new ActionListener() {
+
+								@Override
+								public void actionPerformed(ActionEvent arg0) {
+									if (ventana.editores.getTabCount() > 1) {
+										ventana.editores.removeTab(ventana.pestanaDebug);
+									}
+								}
+							});
+							while (rs.next()) {
+								contenido = rs.getString("Create Procedure");
+							}
+
+							if (ventana.editores.getTabCount() > 1) {
 								ventana.editores.removeTab(ventana.pestanaDebug);
 							}
+							ventana.pestanaDebug = new TitledTab("Procedimiento: " + node.getUserObject().toString(),
+									null, ventana.scrollEditorDebug, boton);
+							ventana.editorDebug.setText(contenido);
+							// ventana.editorDebug.setEditable(false);
+							ventana.editores.addTab(ventana.pestanaDebug);
+
+							ventana.procedimiento = "`" + padre.toString() + "`.`" + node.getUserObject().toString()
+									+ "`";
+							ventana.procedimiento_bd = node.getUserObject().toString();
+							ventana.editores.setSelectedTab(ventana.pestanaDebug);
+							ventana.barra.play.setEnabled(true);
+							ventana.barra.play_pausado.setEnabled(true);
+						} catch (Exception ex) {
+							ex.printStackTrace();
 						}
-					});
-		            while ( rs.next() ) {
-		                contenido = rs.getString("Create Procedure");
-		            }
-		            
-		            if(ventana.editores.getTabCount()>1) {
-		            	ventana.editores.removeTab(ventana.pestanaDebug);
-		            }
-		            ventana.pestanaDebug = new TitledTab("Procedimiento: "+node.getUserObject().toString(), null, ventana.scrollEditorDebug, boton);
-	                ventana.editorDebug.setText(contenido);
-	                //ventana.editorDebug.setEditable(false);
-	                ventana.editores.addTab(ventana.pestanaDebug);
-		            
-		            ventana.procedimiento = "`"+padre.toString()+"`.`"+node.getUserObject().toString()+"`";
-		            ventana.procedimiento_bd = node.getUserObject().toString();
-		            ventana.editores.setSelectedTab(ventana.pestanaDebug);
-		            ventana.barra.play.setEnabled(true);
-		            ventana.barra.play_pausado.setEnabled(true);
-					} catch (Exception ex) {
-						ex.printStackTrace();
 					}
 				}
 			}

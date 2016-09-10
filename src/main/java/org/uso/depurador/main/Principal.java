@@ -233,6 +233,7 @@ public class Principal extends JFrame {
 		this.editor = new Editor();
 		
 		this.editorDebug = new Editor();
+		this.editorDebug.setEnabled(false);
 		this.scrollEditor = new ScrollEditor(editor, true);
 	
 		this.scrollEditorDebug = new ScrollEditor(editorDebug, true);
@@ -256,6 +257,7 @@ public class Principal extends JFrame {
 					barra.siguiente.setEnabled(false);
 					barra.atras.setEnabled(false);
 					editorDebug.setBackground(Color.white);
+					scrollEditorDebug.getGutter().removeAllTrackingIcons();
 				}
 			}
 			

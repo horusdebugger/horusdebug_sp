@@ -41,6 +41,10 @@ public class Depuracion {
 	int linea = 0;
 	int sentenciaPos = 0;
 
+	int lineaBegin = 0;
+
+	List<String> codigoInicial = new ArrayList<>();
+
 	public Depuracion(Principal ventana) {
 		this.ventana = ventana;
 	}
@@ -54,6 +58,26 @@ public class Depuracion {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	public void extraerCodigoInicial() {
+		try {
+			File fXmlFile = new File("ctrl.xml");
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(fXmlFile);
+
+			doc.getDocumentElement().normalize();
+
+			NodeList nList = doc.getElementsByTagName("procedimiento");
+			Element begin = (Element) nList.item(0);
+			for (int i = 0; i < Integer.parseInt(begin.getAttribute("begin")); i++) {
+				this.codigoInicial.add(lineas.get(i).toString());
+			}
+			this.lineaBegin = Integer.parseInt(begin.getAttribute("begin"));
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 
@@ -79,53 +103,68 @@ public class Depuracion {
 			doc.getDocumentElement().normalize();
 
 			NodeList nList = doc.getElementsByTagName("procedimiento");
-			// Element proc = (Element) nList.item(0);
 			Node root = nList.item(0);
 			NodeList sentence = root.getChildNodes();
-			// int posicion = 0;
 			for (int i = 0; i < sentence.getLength(); i++) {
 				if (sentence.item(i).getNodeType() == Node.ELEMENT_NODE) {
 					this.sentencias.add(sentence.item(i));
-					// posicion =
-					// Integer.parseInt(((Element)sentence.item(i)).getAttribute("inicio"));
 				}
 			}
-
-			calcularPosicionCaret(Integer.parseInt(((Element) this.sentencias.get(0)).getAttribute("inicio")));
+			// calcularPosicionCaret(Integer.parseInt(((Element)
+			// this.sentencias.get(0)).getAttribute("inicio")));
 			this.sentenciaPos = 0;
-			// int posicion = Integer.parseInt(proc.getAttribute("begin"));
-			// int posicion =
-			// Integer.parseInt(((Element)nodo).getAttribute("inicio"));
 			this.linea = Integer.parseInt(((Element) this.sentencias.get(0)).getAttribute("inicio"));
-			System.out.println(this.linea);
+			//System.out.println(this.linea);
 			calcularPosicionCaret(this.linea);
+
+			extraerCodigoInicial();
+
+			for (int i = codigoInicial.size() - 1; i >= lineaBegin; i--) {
+				codigoInicial.remove(i);
+			}
+			for (int i = 0; i <= sentenciaPos; i++) {
+				codigoInicial.add(((Element) (sentencias.get(i))).getAttribute("valor"));
+				// System.out.println(((Element)(sentencias.get(i))).getAttribute("valor"));
+			}
+			codigoInicial.add("END");
+			for (int i = 0; i < codigoInicial.size(); i++) {
+				System.out.println(codigoInicial.get(i).toString());
+			}
+
+			ejecutarCodigoFinal();
+
 			ventana.barra.play_pausado.setEnabled(false);
 			ventana.barra.play.setEnabled(false);
 			ventana.barra.siguiente.setEnabled(true);
 			ventana.barra.atras.setEnabled(true);
 			ventana.barra.detener.setEnabled(true);
+			ventana.editorDebug.setBackground(Color.lightGray);
+			ventana.editorDebug.setCurrentLineHighlightColor(Color.orange);
+			
+			ventana.arbolBD.setEnabled(false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		ventana.editorDebug.setBackground(Color.lightGray);
+		
 	}
 
 	void calcularPosicionCaret(int linea) {
 		int posicion = 0;
-		if(linea == 1) {
+		if (linea == 1) {
 			posicion = lineas.get(0).toString().length();
 		} else {
-			for(int i = 0; i<=linea-1; i++) {
+			for (int i = 0; i <= linea - 1; i++) {
 				posicion += lineas.get(i).toString().length();
 			}
 		}
-		ventana.editorDebug.setCaretPosition(posicion+linea-1);
+		ventana.editorDebug.setCaretPosition(posicion + linea - 1);
 		ventana.editorDebug.requestFocus();
 	}
 
 	public void ejecutarDepuradorPausado() {
 		try {
-			Runtime rt = Runtime.getRuntime();
+
+			/*Runtime rt = Runtime.getRuntime();
 			String[] comandos = new String[this.parametros.size() + 3];
 			for (int i = 0; i <= this.parametros.size() + 2; i++) {
 				if (i == 0) {
@@ -138,9 +177,9 @@ public class Depuracion {
 					comandos[i] = this.parametros.get(i - 3).getValor();
 				}
 			}
-			
-			System.out.println(Arrays.toString(comandos));
-			
+
+			// System.out.println(Arrays.toString(comandos));
+
 			Process proc = rt.exec(comandos);
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -160,25 +199,12 @@ public class Depuracion {
 			Utilidades util = new Utilidades();
 			util.LeerArchivoXMLVariables("out.xml");
 			util.getTablaXMLVariables(ventana.tablaVariables);
+*/
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 
 		moverBegin();
-	}
-
-	public String extraerCodigoInicioFinal(int li, int lf) {
-
-		String fragmento = "";
-
-		for (int i = 0; i < lineas.size(); i++) {
-			if (i >= li && i <= lf) {
-				fragmento += lineas.get(i).toString();
-			}
-		}
-
-		return fragmento;
-
 	}
 
 	public void escribirArchivo() throws Exception {
@@ -217,7 +243,7 @@ public class Depuracion {
 					mensajes += salida + "\n";
 				}
 				if (!mensajes.equals("")) {
-					Imprimir.imprimirConsola(ventana.consolaErrores, mensajes);
+					Imprimir.imprimirConsola(ventana.consola, mensajes);
 				}
 				Utilidades util = new Utilidades();
 				util.LeerArchivoXMLVariables("out.xml");
@@ -256,29 +282,57 @@ public class Depuracion {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		for(int i = 0; i<lineas.size(); i++) {
-			System.out.println(lineas.get(i).toString() + " longitud => " + lineas.get(i).toString().length());
-		}
 	}
 
 	public void siguiente() {
-		this.sentenciaPos++;
-		this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
-		calcularPosicionCaret(Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
+		if (sentenciaPos < sentencias.size() - 1) {
+			this.sentenciaPos++;
+			this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
+			calcularPosicionCaret(
+					Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
+
+			for (int i = codigoInicial.size() - 1; i >= lineaBegin; i--) {
+				codigoInicial.remove(i);
+			}
+			for (int i = 0; i <= sentenciaPos; i++) {
+				codigoInicial.add(((Element) (sentencias.get(i))).getAttribute("valor"));
+			}
+			codigoInicial.add("END");
+			for (int i = 0; i < codigoInicial.size(); i++) {
+				System.out.println(codigoInicial.get(i).toString());
+			}
+			ejecutarCodigoFinal();
+		}
 	}
 
 	public void atras() {
-		this.sentenciaPos--;
-		this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
-		calcularPosicionCaret(Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
+		if (sentenciaPos > 0) {
+			this.sentenciaPos--;
+			this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
+			calcularPosicionCaret(
+					Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
+
+			for (int i = codigoInicial.size() - 1; i >= lineaBegin; i--) {
+				codigoInicial.remove(i);
+			}
+			for (int i = 0; i <= sentenciaPos; i++) {
+				codigoInicial.add(((Element) (sentencias.get(i))).getAttribute("valor"));
+			}
+			codigoInicial.add("END");
+			for (int i = 0; i < codigoInicial.size(); i++) {
+				System.out.println(codigoInicial.get(i).toString());
+			}
+			ejecutarCodigoFinal();
+		}
 	}
 
 	public void imprimirListaLineas() {
 		int tam = lineas.size();
 		System.out.println("Lineas del arreglo: " + tam);
-		for (int i = 0; i < this.lineas.size(); i++) {
-			System.out.println(lineas.get(i).toString());
-		}
+		/*
+		 * for (int i = 0; i < this.lineas.size(); i++) {
+		 * System.out.println(lineas.get(i).toString()); }
+		 */
 	}
 
 	public List<Parametro> getParametros() {
@@ -289,4 +343,54 @@ public class Depuracion {
 		this.parametros = parametros;
 	}
 
+	public void ejecutarCodigoFinal() {
+		try {
+			File archivo = new File("depuracion/codigoFinal.proc");
+			archivo.createNewFile();
+			FileWriter escritor = new FileWriter(archivo);
+			String codigo = "";
+			for (int i = 0; i < codigoInicial.size(); i++) {
+				codigo += codigoInicial.get(i).toString() + "\n";
+			}
+			escritor.write(codigo);
+			escritor.close();
+
+			Runtime rt = Runtime.getRuntime();
+			String[] comandos = new String[this.parametros.size() + 2];
+			for (int i = 0; i <= this.parametros.size() + 1; i++) {
+				if (i == 0) {
+					comandos[i] = "depuracion/dep.exe";
+				} else if (i == 1) {
+					comandos[i] = "depuracion/codigoFinal.proc";
+				} else {
+					comandos[i] = this.parametros.get(i - 2).getValor();
+				}
+			}
+
+			// System.out.println(Arrays.toString(comandos));
+
+			Process proc = rt.exec(comandos);
+
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+
+			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+
+			System.out.println("Salida del programa:\n");
+
+			String salida = null;
+			String mensajes = "";
+			while ((salida = stdInput.readLine()) != null) {
+				mensajes += salida + "\n";
+			}
+			if (!mensajes.equals("")) {
+				Imprimir.imprimirConsola(ventana.consola, mensajes);
+			}
+			Utilidades util = new Utilidades();
+			util.LeerArchivoXMLVariables("out.xml");
+			util.getTablaXMLVariables(ventana.tablaVariables);
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 }

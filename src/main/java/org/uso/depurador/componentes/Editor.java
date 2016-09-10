@@ -13,14 +13,7 @@ public class Editor extends RSyntaxTextArea {
 		this.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 		this.setCodeFoldingEnabled(true);
 		this.setAutoIndentEnabled(true);
-		this.setAnimateBracketMatching(true);
-		this.setText("dadadadasdasdasdasd\n"
-				+ "asdasdasdasdadasd\n"
-				+ "asdasdadadad\n"
-				+ "asdasdasdasdasdasdadad\n"
-				+ "adadadad asdasdasdasd\n"
-				+ "dsdsdsfsdfsdf df\n");
-		this.setActiveLineRange(1, 3);
-		
+		this.setAnimateBracketMatching(true);		
+		this.setMarginLineEnabled(true);
 	}
 }

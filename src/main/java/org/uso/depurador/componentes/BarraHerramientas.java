@@ -158,7 +158,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			}
 			result.close();
 			bds.setSelectedItem(ventana.conexion.getConexion().getCatalog());
-			System.out.println(ventana.conexion.getConexion().getCatalog());
+			//System.out.println(ventana.conexion.getConexion().getCatalog());
 		} catch (SQLException e) {
 			Imprimir.imprimirConsolaError(ventana.consolaErrores, e.getMessage());
 			e.printStackTrace();
@@ -596,10 +596,16 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			play_pausado.setEnabled(true);
 			ventana.editorDebug.setBackground(Color.white);
 			ventana.editorDebug.setCaretPosition(ventana.editorDebug.getText().length());
+			//rgb(255,255,170)
+			ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
+			ventana.arbolBD.setEnabled(true);
 		} else if(e.getSource() == this.siguiente) {
 			ventana.depurador.siguiente();
 		} else if(e.getSource() == this.atras) {
 			ventana.depurador.atras();
 		}
+		
+		
+		
 	}
 }

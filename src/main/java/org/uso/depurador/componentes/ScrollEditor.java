@@ -16,8 +16,7 @@ public class ScrollEditor extends RTextScrollPane {
 		this.setIconRowHeaderEnabled(true);
 		this.getGutter().setBookmarkingEnabled(true);
 		this.getGutter().setBookmarkIcon(new ImageIcon("breakpoint.png"));
-		Gutter g = new Gutter(editor);
-		g.setActiveLineRangeColor(Color.red);
+		
 	}
 
 }

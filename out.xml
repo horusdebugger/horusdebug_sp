@@ -1,18 +1,18 @@
 <?xml version='1.0'?>
 <variables>
 <variable>
-<nombre>nombre</nombre>
+<nombre>v</nombre>
 <tipo>varchar</tipo>
-<valor>adasd</valor>
+<valor>OMAR MURCIA</valor>
 </variable>
 <variable>
 <nombre>n2</nombre>
 <tipo>int</tipo>
-<valor>0</valor>
+<valor>2</valor>
 </variable>
 <variable>
 <nombre>n1</nombre>
 <tipo>int</tipo>
-<valor>10</valor>
+<valor>25</valor>
 </variable>
 </variables>
