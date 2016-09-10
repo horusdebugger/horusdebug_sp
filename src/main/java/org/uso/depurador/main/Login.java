@@ -126,6 +126,7 @@ public class Login extends JFrame {
 		contentPane.add(lblContrasea);
 
 		txtPass = new JPasswordField();
+		this.txtPass.setText("admin123");
 		txtPass.setEchoChar('*');
 		txtPass.setBounds(110, 163, 346, 20);
 		contentPane.add(txtPass);

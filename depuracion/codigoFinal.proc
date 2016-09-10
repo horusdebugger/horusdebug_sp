@@ -1,5 +1,5 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(in v varchar(255))
-BEGIN 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(in nombre varchar(50), in edad int)
+BEGIN
 DECLARE n1 INT;
 DECLARE n2 INT;
 set n1=21;

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.UIManager;
@@ -90,8 +91,16 @@ public class BDArbol extends JTree {
 
 								@Override
 								public void actionPerformed(ActionEvent arg0) {
-									if (ventana.editores.getTabCount() > 1) {
+									
+									if(ventana.barra.detener.isEnabled()) {
+										int opcion = JOptionPane.showConfirmDialog(ventana, "Desea cancelar la depuración en proceso?", "ADVERTENCIA", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+										if(opcion == JOptionPane.OK_OPTION) {
+											ventana.editores.removeTab(ventana.pestanaDebug);
+											ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
+										}
+									} else {
 										ventana.editores.removeTab(ventana.pestanaDebug);
+										ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
 									}
 								}
 							});

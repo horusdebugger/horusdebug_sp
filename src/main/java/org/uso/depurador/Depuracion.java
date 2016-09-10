@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.xml.parsers.DocumentBuilder;
@@ -116,6 +117,15 @@ public class Depuracion {
 			this.linea = Integer.parseInt(((Element) this.sentencias.get(0)).getAttribute("inicio"));
 			//System.out.println(this.linea);
 			calcularPosicionCaret(this.linea);
+			
+			try {
+				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(this.linea-1, 
+						new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 			extraerCodigoInicial();
 
@@ -142,6 +152,7 @@ public class Depuracion {
 			ventana.editorDebug.setCurrentLineHighlightColor(Color.orange);
 			
 			ventana.arbolBD.setEnabled(false);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -200,11 +211,12 @@ public class Depuracion {
 			util.LeerArchivoXMLVariables("out.xml");
 			util.getTablaXMLVariables(ventana.tablaVariables);
 */
+			ventana.scrollEditorDebug.getGutter().setBookmarkingEnabled(false);
+			moverBegin();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-
-		moverBegin();
+		
 	}
 
 	public void escribirArchivo() throws Exception {
@@ -221,7 +233,7 @@ public class Depuracion {
 			String[] comandos = new String[this.parametros.size() + 2];
 			for (int i = 0; i <= this.parametros.size() + 1; i++) {
 				if (i == 0) {
-					comandos[i] = "depuracion/dep.exe";
+					comandos[i] = "depuracion/dep";
 				} else if (i == 1) {
 					comandos[i] = "depuracion/codigo.proc";
 				} else {
@@ -301,6 +313,14 @@ public class Depuracion {
 			for (int i = 0; i < codigoInicial.size(); i++) {
 				System.out.println(codigoInicial.get(i).toString());
 			}
+			try {
+				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(linea-1, 
+						new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			ejecutarCodigoFinal();
 		}
 	}
@@ -322,6 +342,14 @@ public class Depuracion {
 			for (int i = 0; i < codigoInicial.size(); i++) {
 				System.out.println(codigoInicial.get(i).toString());
 			}
+			ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+			try {
+				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(linea-1, 
+						new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
 			ejecutarCodigoFinal();
 		}
 	}
@@ -359,7 +387,7 @@ public class Depuracion {
 			String[] comandos = new String[this.parametros.size() + 2];
 			for (int i = 0; i <= this.parametros.size() + 1; i++) {
 				if (i == 0) {
-					comandos[i] = "depuracion/dep.exe";
+					comandos[i] = "depuracion/dep";
 				} else if (i == 1) {
 					comandos[i] = "depuracion/codigoFinal.proc";
 				} else {

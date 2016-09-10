@@ -129,7 +129,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.addSeparator();
 		this.add(new JLabel("Conectado a:  "));
 
-		// asignación de eventos a elementos de la toolbar
+		// asignaciï¿½n de eventos a elementos de la toolbar
 		this.play.addActionListener(this);
 		this.nuevo.addActionListener(this);
 		this.abrir.addActionListener(this);
@@ -219,64 +219,47 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 				parametros.add(p);
 			}
 			rs.close();
-			if(pedirDatos(parametros)){
+			Parametro param = pedirDatos(parametros);
+			if (param == null) {
 				ventana.depurador = new Depuracion(ventana);
 				ventana.depurador.setParametros(parametros);
 				ventana.depurador.iniciarDepuracion();
 			} else {
-				JOptionPane.showMessageDialog(ventana, "Ingrese un tipo de dato válido a cada parametro.", "Error",
+				JOptionPane.showMessageDialog(ventana, "Ingrese un valor correcto al parametro:\nIdentificador: "+param.getNombre() + "\nTipo: "+param.getTipo()+"", "ERROR",
 						JOptionPane.ERROR_MESSAGE);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		/*
-		 * for (int i = 0; i < parametros.size(); i++) { System.out.println(
-		 * "Nombre: " + parametros.get(i).getNombre()); System.out.println(
-		 * "Tipo: " + parametros.get(i).getTipo()); System.out.println("Valor: "
-		 * + parametros.get(i).getValor()); }
-		 */
 
 	}
 
-	boolean pedirDatos(List<Parametro> listado) {
+	Parametro pedirDatos(List<Parametro> listado) {
 
-		boolean control = true;
+		Parametro p = null;
 
 		for (int i = 0; i < listado.size(); i++) {
-			if (listado.get(i).getTipo().equals("varchar")) {
-				try {
-					String valor = JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\nIdentificador: "
-							+ listado.get(i).getNombre() + "\nTipo: " + listado.get(i).getTipo());
-					listado.get(i).setValor(valor);
-				} catch (Exception ex) {
-					control = false;
-					break;
-				}
-			} else if (listado.get(i).getTipo().equals("int")) {
-				try {
-					int valor = Integer
-							.parseInt(JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\nIdentificador: "
-									+ listado.get(i).getNombre() + "\nTipo: " + listado.get(i).getTipo()));
-					listado.get(i).setValor(valor + "");
-				} catch (Exception ex) {
-					control = false;
-					break;
-				}
-			} else if (listado.get(i).getTipo().equals("double")) {
-				try {
-					double valor = Double
-							.parseDouble(JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\nIdentificador: "
-									+ listado.get(i).getNombre() + "\nTipo: " + listado.get(i).getTipo()));
-					listado.get(i).setValor(valor + "");
-				} catch (Exception ex) {
-					control = false;
-					break;
-				}
-			}
-		}
-		return control;
 
+			String valor = JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\nIdentificador: "
+					+ listado.get(i).getNombre() + "\nTipo: " + listado.get(i).getTipo());
+			listado.get(i).setValor(valor);
+			try {
+				if(listado.get(i).getTipo().equals("varchar")) {
+					// agregar algo para las cadenas
+				} else if(listado.get(i).getTipo().equals("int")) {
+					int entero = Integer.parseInt(valor);
+				} else if(listado.get(i).getTipo().equals("double")) {
+					double doble = Double.parseDouble(valor);
+				}
+			} catch(NumberFormatException ex) {
+				ex.printStackTrace();
+				p = listado.get(i);
+				break;
+			}
+			
+		}
+		return p;
+		
 	}
 
 	void ejecutarPausado() {
@@ -297,26 +280,27 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 				parametros.add(p);
 			}
 			rs.close();
-			pedirDatos(parametros);
-			ventana.depurador = new Depuracion(ventana);
-			ventana.depurador.setParametros(parametros);
-			ventana.depurador.iniciarDepuracionPausada();
-			ventana.editorDebug.requestFocusInWindow();
+			Parametro param = pedirDatos(parametros);
+			if(param == null) {
+				ventana.depurador = new Depuracion(ventana);
+				ventana.depurador.setParametros(parametros);
+				ventana.depurador.iniciarDepuracionPausada();
+				ventana.editorDebug.requestFocusInWindow();
+			} else {
+				
+				JOptionPane.showMessageDialog(ventana, "Ingrese un valor correcto al parametro:\nIdentificador: "+param.getNombre() + "\nTipo: "+param.getTipo()+"", "ERROR",
+						JOptionPane.ERROR_MESSAGE);
+				
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		/*
-		 * for(int i =0; i<parametros.size(); i++) { System.out.println(
-		 * "Nombre: "+parametros.get(i).getNombre()); System.out.println(
-		 * "Tipo: "+parametros.get(i).getTipo()); System.out.println("Valor: "
-		 * +parametros.get(i).getValor()); }
-		 */
 	}
 
 	void nuevo() {
 		if (this.ventana.control) {
 			int resultado = JOptionPane.showConfirmDialog(this.ventana,
-					"Hay cambios sin guardar. Desea guardar los cambios?.", "Informaciï¿½n", JOptionPane.YES_NO_OPTION,
+					"Hay cambios sin guardar. Desea guardar los cambios?.", "InformaciÃ³n", JOptionPane.YES_NO_OPTION,
 					JOptionPane.WARNING_MESSAGE);
 			if (resultado == JOptionPane.YES_OPTION) {
 				if (this.ventana.archivo != null) {
@@ -641,6 +625,8 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			// rgb(255,255,170)
 			ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
 			ventana.arbolBD.setEnabled(true);
+			ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+			ventana.scrollEditorDebug.getGutter().setBookmarkingEnabled(true);
 		} else if (e.getSource() == this.siguiente) {
 			ventana.depurador.siguiente();
 		} else if (e.getSource() == this.atras) {

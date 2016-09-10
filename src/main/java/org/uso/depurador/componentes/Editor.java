@@ -15,5 +15,6 @@ public class Editor extends RSyntaxTextArea {
 		this.setAutoIndentEnabled(true);
 		this.setAnimateBracketMatching(true);		
 		this.setMarginLineEnabled(true);
+		
 	}
 }

@@ -18,6 +18,7 @@ public class BarraDeEstado extends JPanel {
 		this.setPreferredSize(new Dimension(100, 25));
 		this.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		posicion = new JLabel("0:0");
+		posicion.setText("Linea: " + 1 + " : " + "Columna: "  + 0);
 		mensaje = new JLabel("Listo");
 		this.add(mensaje);
 		this.add(new JLabel(" | "));

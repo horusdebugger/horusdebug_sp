@@ -1,9 +1,14 @@
 <?xml version='1.0'?>
 <variables>
 <variable>
-<nombre>v</nombre>
+<nombre>edad</nombre>
+<tipo>int</tipo>
+<valor>67</valor>
+</variable>
+<variable>
+<nombre>nombre</nombre>
 <tipo>varchar</tipo>
-<valor>OMAR</valor>
+<valor>sdssdf</valor>
 </variable>
 <variable>
 <nombre>n2</nombre>
