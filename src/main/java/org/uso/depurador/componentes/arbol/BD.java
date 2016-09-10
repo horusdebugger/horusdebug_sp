@@ -9,8 +9,8 @@ public class BD {
 	private int id;
 	private String nombre;
 	private ImageIcon icono = new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/database.png"));
-	private ArrayList<BDTabla> tablas = new ArrayList<>();
 	private ArrayList<BDProc> procedimientos = new ArrayList<>();
+	private BDRootTabla folder_tabla = new BDRootTabla();
 	
 	
 	public ImageIcon getIcono() {
@@ -19,11 +19,12 @@ public class BD {
 	public void setIcono(ImageIcon icono) {
 		this.icono = icono;
 	}
-	public ArrayList<BDTabla> getTablas() {
-		return tablas;
+	
+	public BDRootTabla getFolder_tabla() {
+		return folder_tabla;
 	}
-	public void setTablas(ArrayList<BDTabla> tablas) {
-		this.tablas = tablas;
+	public void setFolder_tabla(BDRootTabla folder_tabla) {
+		this.folder_tabla = folder_tabla;
 	}
 	public int getId() {
 		return id;

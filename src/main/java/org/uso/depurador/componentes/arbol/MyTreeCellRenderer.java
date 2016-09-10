@@ -50,6 +50,10 @@ public class MyTreeCellRenderer extends DefaultTreeCellRenderer {
 			setIcon(((BDProc) ((DefaultMutableTreeNode) value).getUserObject()).getIcono());
 		} else if (((DefaultMutableTreeNode) value).getUserObject() instanceof BDServidor) {
 			setIcon(((BDServidor) ((DefaultMutableTreeNode) value).getUserObject()).getIcono());
+		} else if (((DefaultMutableTreeNode) value).getUserObject() instanceof BDRootTabla) {
+			setIcon(((BDRootTabla) ((DefaultMutableTreeNode) value).getUserObject()).getIcono());
+		} else if (((DefaultMutableTreeNode) value).getUserObject() instanceof BDTablaCampo) {
+			setIcon(((BDTablaCampo) ((DefaultMutableTreeNode) value).getUserObject()).getIcono());
 		}
 
 		return this;

@@ -1,5 +1,8 @@
 package org.uso.depurador.componentes.arbol;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.ImageIcon;
 
 public class BDTabla {
@@ -8,6 +11,7 @@ public class BDTabla {
 	private String nombre;
 	private ImageIcon icono = new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/table.png"));
 	private ImageIcon iconoVacio = new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/table.png"));
+	private List<BDTablaCampo> campos = new ArrayList<>();
 	private BD padre;
 	
 	public int getId() {
@@ -35,6 +39,12 @@ public class BDTabla {
 		this.iconoVacio = iconoVacio;
 	}
 	
+	public List<BDTablaCampo> getCampos() {
+		return campos;
+	}
+	public void setCampos(List<BDTablaCampo> campos) {
+		this.campos = campos;
+	}
 	public BD getPadre() {
 		return padre;
 	}
