@@ -233,7 +233,7 @@ public class Principal extends JFrame {
 		this.editor = new Editor();
 		
 		this.editorDebug = new Editor();
-		this.editorDebug.setEnabled(false);
+		this.editorDebug.setEditable(false);
 		this.scrollEditor = new ScrollEditor(editor, true);
 	
 		this.scrollEditorDebug = new ScrollEditor(editorDebug, true);

@@ -51,7 +51,8 @@ import net.infonode.tabbedpanel.titledtab.TitledTab;
 public class BarraHerramientas extends JToolBar implements ActionListener {
 
 	/* Elementos de la barra de tareas */
-	public JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener, ejecutarSQL, actualizar, play_pausado;
+	public JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener, ejecutarSQL, actualizar,
+			play_pausado;
 	private JComboBox<String> bds;
 
 	/* Ventana */
@@ -96,16 +97,19 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 
 		this.ejecutarSQL = new JButton();
 		this.ejecutarSQL.setToolTipText("Ejecutar sentencia SQL");
-		this.ejecutarSQL.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/lightning.png")));
-		
+		this.ejecutarSQL
+				.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/lightning.png")));
+
 		this.actualizar = new JButton();
 		this.actualizar.setToolTipText("Actualizar interfaz");
-		this.actualizar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/arrow_refresh.png")));
-		
+		this.actualizar.setIcon(
+				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/arrow_refresh.png")));
+
 		this.play_pausado = new JButton();
 		this.play_pausado.setToolTipText("Ejecutar paso a paso");
-		this.play_pausado.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/clock_play.png")));
-		
+		this.play_pausado
+				.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/clock_play.png")));
+
 		this.add(nuevo);
 		this.add(abrir);
 		this.add(guardar);
@@ -124,7 +128,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.add(ejecutarSQL);
 		this.addSeparator();
 		this.add(new JLabel("Conectado a:  "));
-		
+
 		// asignación de eventos a elementos de la toolbar
 		this.play.addActionListener(this);
 		this.nuevo.addActionListener(this);
@@ -136,55 +140,54 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.detener.addActionListener(this);
 		this.siguiente.addActionListener(this);
 		this.atras.addActionListener(this);
-		
+
 		llenarBDS();
-		
+
 		this.play.setEnabled(false);
 		this.play_pausado.setEnabled(false);
 		this.siguiente.setEnabled(false);
 		this.atras.setEnabled(false);
 
 	}
-	
-	void llenarBDS(){
+
+	void llenarBDS() {
 		this.bds = new JComboBox<>();
 		this.bds.setMaximumSize(new Dimension(200, 100));
 		try {
 			Statement sentencia = ventana.conexion.getConexion().createStatement();
 			ResultSet result = sentencia.executeQuery("show databases");
 			bds.addItem("");
-			while(result.next()) {
+			while (result.next()) {
 				bds.addItem(result.getString("Database"));
 			}
 			result.close();
 			bds.setSelectedItem(ventana.conexion.getConexion().getCatalog());
-			//System.out.println(ventana.conexion.getConexion().getCatalog());
+			// System.out.println(ventana.conexion.getConexion().getCatalog());
 		} catch (SQLException e) {
 			Imprimir.imprimirConsolaError(ventana.consolaErrores, e.getMessage());
 			e.printStackTrace();
 		}
 		this.bds.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//ventana.conexion.cerrarConexion();
-				ventana.conexion.setBd(((JComboBox<String>)e.getSource()).getSelectedItem().toString());
+				// ventana.conexion.cerrarConexion();
+				ventana.conexion.setBd(((JComboBox<String>) e.getSource()).getSelectedItem().toString());
 				ventana.conexion.conectar();
 			}
 		});
-		
-		
+
 		this.add(this.bds);
-		
+
 	}
-	
+
 	void ejecutarSQL() {
 		String sql = ventana.editor.getSelectedText();
 		Statement sentencia = null;
 		try {
 			sentencia = ventana.conexion.getConexion().createStatement();
 			boolean tipo = sentencia.execute(sql);
-			if(tipo) {
+			if (tipo) {
 				Utilidades utilidades = new Utilidades();
 				utilidades.consultar(sql, ventana);
 			} else {
@@ -198,80 +201,118 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 	}
 
 	void ejecutar() {
-		
+
 		List<Parametro> parametros = new ArrayList<>();
-		
+
 		ventana.editores.setSelectedTab(ventana.pestanaDebug);
-		
+
 		try {
 			Statement stmt = ventana.conexion.getConexion().createStatement();
-            ResultSet rs;
- 
-            rs = stmt.executeQuery("SELECT PARAMETER_NAME, DATA_TYPE FROM information_schema.parameters "
-            		+ "WHERE SPECIFIC_NAME = '"+ventana.procedimiento_bd+"'");
-            while ( rs.next() ) {
-            	Parametro p = new Parametro();
-            	p.setNombre(rs.getString("PARAMETER_NAME"));
-            	p.setTipo(rs.getString("DATA_TYPE"));
-            	parametros.add(p);
-            }
-            rs.close();
-            pedirDatos(parametros);
-            ventana.depurador = new Depuracion(ventana);
-            ventana.depurador.setParametros(parametros);
-            ventana.depurador.iniciarDepuracion();
-			} catch (Exception ex) {
-				ex.printStackTrace();
+			ResultSet rs;
+
+			rs = stmt.executeQuery("SELECT PARAMETER_NAME, DATA_TYPE FROM information_schema.parameters "
+					+ "WHERE SPECIFIC_NAME = '" + ventana.procedimiento_bd + "'");
+			while (rs.next()) {
+				Parametro p = new Parametro();
+				p.setNombre(rs.getString("PARAMETER_NAME"));
+				p.setTipo(rs.getString("DATA_TYPE"));
+				parametros.add(p);
 			}
-		for(int i =0; i<parametros.size(); i++) {
-			System.out.println("Nombre: "+parametros.get(i).getNombre());
-			System.out.println("Tipo: "+parametros.get(i).getTipo());
-			System.out.println("Valor: "+parametros.get(i).getValor());
+			rs.close();
+			if(pedirDatos(parametros)){
+				ventana.depurador = new Depuracion(ventana);
+				ventana.depurador.setParametros(parametros);
+				ventana.depurador.iniciarDepuracion();
+			} else {
+				JOptionPane.showMessageDialog(ventana, "Ingrese un tipo de dato válido a cada parametro.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
-		
+		/*
+		 * for (int i = 0; i < parametros.size(); i++) { System.out.println(
+		 * "Nombre: " + parametros.get(i).getNombre()); System.out.println(
+		 * "Tipo: " + parametros.get(i).getTipo()); System.out.println("Valor: "
+		 * + parametros.get(i).getValor()); }
+		 */
+
 	}
-	
-	void pedirDatos(List<Parametro> listado) {
-		
-		for(int i =0; i<listado.size(); i++) {
-			String valor = JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\nIdentificador: "+listado.get(i).getNombre()+"\nTipo: "+listado.get(i).getTipo());
-			listado.get(i).setValor(valor);
+
+	boolean pedirDatos(List<Parametro> listado) {
+
+		boolean control = true;
+
+		for (int i = 0; i < listado.size(); i++) {
+			if (listado.get(i).getTipo().equals("varchar")) {
+				try {
+					String valor = JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\nIdentificador: "
+							+ listado.get(i).getNombre() + "\nTipo: " + listado.get(i).getTipo());
+					listado.get(i).setValor(valor);
+				} catch (Exception ex) {
+					control = false;
+					break;
+				}
+			} else if (listado.get(i).getTipo().equals("int")) {
+				try {
+					int valor = Integer
+							.parseInt(JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\nIdentificador: "
+									+ listado.get(i).getNombre() + "\nTipo: " + listado.get(i).getTipo()));
+					listado.get(i).setValor(valor + "");
+				} catch (Exception ex) {
+					control = false;
+					break;
+				}
+			} else if (listado.get(i).getTipo().equals("double")) {
+				try {
+					double valor = Double
+							.parseDouble(JOptionPane.showInputDialog(ventana, "Ingrese el parametro:\nIdentificador: "
+									+ listado.get(i).getNombre() + "\nTipo: " + listado.get(i).getTipo()));
+					listado.get(i).setValor(valor + "");
+				} catch (Exception ex) {
+					control = false;
+					break;
+				}
+			}
 		}
+		return control;
+
 	}
-	
+
 	void ejecutarPausado() {
 		List<Parametro> parametros = new ArrayList<>();
-		
+
 		ventana.editores.setSelectedTab(ventana.pestanaDebug);
-		
+
 		try {
 			Statement stmt = ventana.conexion.getConexion().createStatement();
-            ResultSet rs;
- 
-            rs = stmt.executeQuery("SELECT PARAMETER_NAME, DATA_TYPE FROM information_schema.parameters "
-            		+ "WHERE SPECIFIC_NAME = '"+ventana.procedimiento_bd+"'");
-            while ( rs.next() ) {
-            	Parametro p = new Parametro();
-            	p.setNombre(rs.getString("PARAMETER_NAME"));
-            	p.setTipo(rs.getString("DATA_TYPE"));
-            	parametros.add(p);
-            }
-            rs.close();
-            pedirDatos(parametros);
-            ventana.depurador = new Depuracion(ventana);
-            ventana.depurador.setParametros(parametros);
-            ventana.depurador.iniciarDepuracionPausada();
-            ventana.editorDebug.requestFocusInWindow();
-			} catch (Exception ex) {
-				ex.printStackTrace();
+			ResultSet rs;
+
+			rs = stmt.executeQuery("SELECT PARAMETER_NAME, DATA_TYPE FROM information_schema.parameters "
+					+ "WHERE SPECIFIC_NAME = '" + ventana.procedimiento_bd + "'");
+			while (rs.next()) {
+				Parametro p = new Parametro();
+				p.setNombre(rs.getString("PARAMETER_NAME"));
+				p.setTipo(rs.getString("DATA_TYPE"));
+				parametros.add(p);
 			}
-		/*for(int i =0; i<parametros.size(); i++) {
-			System.out.println("Nombre: "+parametros.get(i).getNombre());
-			System.out.println("Tipo: "+parametros.get(i).getTipo());
-			System.out.println("Valor: "+parametros.get(i).getValor());
-		}*/
+			rs.close();
+			pedirDatos(parametros);
+			ventana.depurador = new Depuracion(ventana);
+			ventana.depurador.setParametros(parametros);
+			ventana.depurador.iniciarDepuracionPausada();
+			ventana.editorDebug.requestFocusInWindow();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		/*
+		 * for(int i =0; i<parametros.size(); i++) { System.out.println(
+		 * "Nombre: "+parametros.get(i).getNombre()); System.out.println(
+		 * "Tipo: "+parametros.get(i).getTipo()); System.out.println("Valor: "
+		 * +parametros.get(i).getValor()); }
+		 */
 	}
-	
+
 	void nuevo() {
 		if (this.ventana.control) {
 			int resultado = JOptionPane.showConfirmDialog(this.ventana,
@@ -304,7 +345,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 								BufferedWriter bw = new BufferedWriter(fw);
 								bw.write(this.ventana.editor.getText());
 								bw.close();
-								
+
 								this.ventana.archivo = null;
 								this.ventana.editor.setText("");
 								this.ventana.pestanaEditor.setText("Nuevo");
@@ -317,8 +358,6 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 					}
 				}
 
-				
-
 			} else if (resultado == JOptionPane.NO_OPTION) {
 
 				this.ventana.editor.setText("");
@@ -330,9 +369,9 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			this.ventana.editor.setText("");
 			ventana.pestanaEditor.setText("Nuevo");
 			this.ventana.control = false;
-			
+
 		}
-		
+
 	}
 
 	void abrir() {
@@ -358,18 +397,18 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 				switch (opcion1) {
 				case JFileChooser.APPROVE_OPTION: {
 					int op_temp = 0;
-					if(ventana.archivo==null) {
+					if (ventana.archivo == null) {
 						op_temp = 1;
 					} else {
 						op_temp = 2;
 					}
-					switch(op_temp) {
+					switch (op_temp) {
 					case 1: {
 						JFileChooser elegir_op_temp = new JFileChooser();
 						int result = elegir_op_temp.showSaveDialog(ventana);
-						switch(result) {
-							case JFileChooser.APPROVE_OPTION: {
-								try {
+						switch (result) {
+						case JFileChooser.APPROVE_OPTION: {
+							try {
 								File archivo_temp = new File(elegir_op_temp.getSelectedFile().getAbsolutePath());
 								FileWriter fw = new FileWriter(archivo_temp.getAbsoluteFile());
 								BufferedWriter bw = new BufferedWriter(fw);
@@ -377,62 +416,64 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 								bw.close();
 								ventana.archivo = elegir.getSelectedFile();
 								try {
-									BufferedReader br = new BufferedReader(new FileReader(ventana.archivo.getAbsolutePath()));
+									BufferedReader br = new BufferedReader(
+											new FileReader(ventana.archivo.getAbsolutePath()));
 									try {
-									    StringBuilder sb = new StringBuilder();
-									    String line = br.readLine();
+										StringBuilder sb = new StringBuilder();
+										String line = br.readLine();
 
-									    while (line != null) {
-									        sb.append(line);
-									        sb.append(System.lineSeparator());
-									        line = br.readLine();
-									    }
-									    String contenido = sb.toString();
-									    
-									    ventana.editor.setText(contenido);
-									    ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
-									    ventana.pestanaEditor.setText(ventana.archivo.getName());
+										while (line != null) {
+											sb.append(line);
+											sb.append(System.lineSeparator());
+											line = br.readLine();
+										}
+										String contenido = sb.toString();
+
+										ventana.editor.setText(contenido);
+										ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
+										ventana.pestanaEditor.setText(ventana.archivo.getName());
 										this.ventana.control = false;
 									} finally {
-									    br.close();
+										br.close();
 									}
 								} catch (Exception ex) {
 									ex.printStackTrace();
 								}
-								
-								} catch (Exception ex) {
-									ex.printStackTrace();
-								}
-								break;
+
+							} catch (Exception ex) {
+								ex.printStackTrace();
 							}
-							case JFileChooser.CANCEL_OPTION: {
-								ventana.archivo = elegir.getSelectedFile();
+							break;
+						}
+						case JFileChooser.CANCEL_OPTION: {
+							ventana.archivo = elegir.getSelectedFile();
+							try {
+								BufferedReader br = new BufferedReader(
+										new FileReader(ventana.archivo.getAbsolutePath()));
 								try {
-									BufferedReader br = new BufferedReader(new FileReader(ventana.archivo.getAbsolutePath()));
-									try {
-									    StringBuilder sb = new StringBuilder();
-									    String line = br.readLine();
+									StringBuilder sb = new StringBuilder();
+									String line = br.readLine();
 
-									    while (line != null) {
-									        sb.append(line);
-									        sb.append(System.lineSeparator());
-									        line = br.readLine();
-									    }
-									    String contenido = sb.toString();
-									    
-									    ventana.editor.setText(contenido);
-									    ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
-									    ventana.pestanaEditor.setText(ventana.archivo.getName());
-										this.ventana.control = false;
-									} finally {
-									    br.close();
+									while (line != null) {
+										sb.append(line);
+										sb.append(System.lineSeparator());
+										line = br.readLine();
 									}
-								} catch (Exception ex) {
-									ex.printStackTrace();
+									String contenido = sb.toString();
+
+									ventana.editor.setText(contenido);
+									ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
+									ventana.pestanaEditor.setText(ventana.archivo.getName());
+									this.ventana.control = false;
+								} finally {
+									br.close();
 								}
-								break;
+							} catch (Exception ex) {
+								ex.printStackTrace();
 							}
-							}
+							break;
+						}
+						}
 						break;
 					}
 					case 2: {
@@ -443,25 +484,26 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 				}
 				case JFileChooser.CANCEL_OPTION: {
 					try {
-						BufferedReader br = new BufferedReader(new FileReader(elegir.getSelectedFile().getAbsolutePath()));
+						BufferedReader br = new BufferedReader(
+								new FileReader(elegir.getSelectedFile().getAbsolutePath()));
 						try {
-						    StringBuilder sb = new StringBuilder();
-						    String line = br.readLine();
+							StringBuilder sb = new StringBuilder();
+							String line = br.readLine();
 
-						    while (line != null) {
-						        sb.append(line);
-						        sb.append(System.lineSeparator());
-						        line = br.readLine();
-						    }
-						    String contenido = sb.toString();
-						    
-						    ventana.editor.setText(contenido);
-						    ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
-						    ventana.pestanaEditor.setText(ventana.archivo.getName());
+							while (line != null) {
+								sb.append(line);
+								sb.append(System.lineSeparator());
+								line = br.readLine();
+							}
+							String contenido = sb.toString();
+
+							ventana.editor.setText(contenido);
+							ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
+							ventana.pestanaEditor.setText(ventana.archivo.getName());
 							this.ventana.control = false;
 							this.ventana.archivo = elegir.getSelectedFile();
 						} finally {
-						    br.close();
+							br.close();
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
@@ -477,28 +519,28 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			case 2: {
 				ventana.archivo = elegir.getSelectedFile();
 				try {
-				BufferedReader br = new BufferedReader(new FileReader(ventana.archivo.getAbsolutePath()));
-				try {
-				    StringBuilder sb = new StringBuilder();
-				    String line = br.readLine();
+					BufferedReader br = new BufferedReader(new FileReader(ventana.archivo.getAbsolutePath()));
+					try {
+						StringBuilder sb = new StringBuilder();
+						String line = br.readLine();
 
-				    while (line != null) {
-				        sb.append(line);
-				        sb.append(System.lineSeparator());
-				        line = br.readLine();
-				    }
-				    String contenido = sb.toString();
-				    
-				    ventana.editor.setText(contenido);
-				    ventana.pestanaEditor.setText(ventana.archivo.getName());
-				    ventana.control = false;
+						while (line != null) {
+							sb.append(line);
+							sb.append(System.lineSeparator());
+							line = br.readLine();
+						}
+						String contenido = sb.toString();
 
-				} finally {
-				    br.close();
+						ventana.editor.setText(contenido);
+						ventana.pestanaEditor.setText(ventana.archivo.getName());
+						ventana.control = false;
+
+					} finally {
+						br.close();
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
 				break;
 			}
 			}
@@ -513,63 +555,63 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 	}
 
 	void guardar() {
-		if(ventana.archivo == null) {
+		if (ventana.archivo == null) {
 			JFileChooser elegir = new JFileChooser();
 			int opcion = elegir.showSaveDialog(ventana);
-			switch(opcion) {
-				case JFileChooser.APPROVE_OPTION: {
-					try {
-						File archivo_temp = new File(elegir.getSelectedFile().getName());
-						FileWriter fw = new FileWriter(archivo_temp.getAbsoluteFile());
-						BufferedWriter bw = new BufferedWriter(fw);
-						bw.write(this.ventana.editor.getText());
-						bw.close();
-						
-						BufferedReader br = new BufferedReader(new FileReader(archivo_temp.getAbsolutePath()));
-						
-						 StringBuilder sb = new StringBuilder();
-						    String line = br.readLine();
+			switch (opcion) {
+			case JFileChooser.APPROVE_OPTION: {
+				try {
+					File archivo_temp = new File(elegir.getSelectedFile().getName());
+					FileWriter fw = new FileWriter(archivo_temp.getAbsoluteFile());
+					BufferedWriter bw = new BufferedWriter(fw);
+					bw.write(this.ventana.editor.getText());
+					bw.close();
 
-						    while (line != null) {
-						        sb.append(line);
-						        sb.append(System.lineSeparator());
-						        line = br.readLine();
-						    }
-						    String contenido = sb.toString();
-						    
-						
-						ventana.editor.setText(contenido);
-					    ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
-					    this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
-						TitledTab pestanaTemp = new TitledTab(elegir.getSelectedFile().getName(), null, ventana.scrollEditor, null);
-						this.ventana.editores.addTab(pestanaTemp);
-						this.ventana.control = false;
-						this.ventana.archivo = elegir.getSelectedFile();
-						ventana.control = false;
-					} catch (Exception ex) {
-						ex.printStackTrace();
+					BufferedReader br = new BufferedReader(new FileReader(archivo_temp.getAbsolutePath()));
+
+					StringBuilder sb = new StringBuilder();
+					String line = br.readLine();
+
+					while (line != null) {
+						sb.append(line);
+						sb.append(System.lineSeparator());
+						line = br.readLine();
 					}
-					break;
+					String contenido = sb.toString();
+
+					ventana.editor.setText(contenido);
+					ventana.scrollEditor = new ScrollEditor(ventana.editor, true);
+					this.ventana.editores.removeTab(this.ventana.editores.getTabAt(0));
+					TitledTab pestanaTemp = new TitledTab(elegir.getSelectedFile().getName(), null,
+							ventana.scrollEditor, null);
+					this.ventana.editores.addTab(pestanaTemp);
+					this.ventana.control = false;
+					this.ventana.archivo = elegir.getSelectedFile();
+					ventana.control = false;
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
-				case JFileChooser.CANCEL_OPTION: {
-					break;
-				}
-				default: {
-					break;
-				}
+				break;
+			}
+			case JFileChooser.CANCEL_OPTION: {
+				break;
+			}
+			default: {
+				break;
+			}
 			}
 		} else {
 			try {
-			FileWriter fw = new FileWriter(ventana.archivo.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write(this.ventana.editor.getText());
-			bw.close();
-			ventana.control = false;
+				FileWriter fw = new FileWriter(ventana.archivo.getAbsoluteFile());
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write(this.ventana.editor.getText());
+				bw.close();
+				ventana.control = false;
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 		}
-		
+
 	}
 
 	@Override
@@ -596,16 +638,14 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			play_pausado.setEnabled(true);
 			ventana.editorDebug.setBackground(Color.white);
 			ventana.editorDebug.setCaretPosition(ventana.editorDebug.getText().length());
-			//rgb(255,255,170)
+			// rgb(255,255,170)
 			ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
 			ventana.arbolBD.setEnabled(true);
-		} else if(e.getSource() == this.siguiente) {
+		} else if (e.getSource() == this.siguiente) {
 			ventana.depurador.siguiente();
-		} else if(e.getSource() == this.atras) {
+		} else if (e.getSource() == this.atras) {
 			ventana.depurador.atras();
 		}
-		
-		
-		
+
 	}
 }

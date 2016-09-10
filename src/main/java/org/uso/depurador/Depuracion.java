@@ -367,8 +367,6 @@ public class Depuracion {
 				}
 			}
 
-			// System.out.println(Arrays.toString(comandos));
-
 			Process proc = rt.exec(comandos);
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
