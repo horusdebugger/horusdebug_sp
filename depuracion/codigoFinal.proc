@@ -1,9 +1,5 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(in nombre varchar(50), in edad int)
-BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(in nombre varchar(50), in edad int) BEGIN
 DECLARE n1 INT;
 DECLARE n2 INT;
 set n1=21;
-select * from table1 where id=n1;
-set n2 = 2;
-set n1 = 25;
 END

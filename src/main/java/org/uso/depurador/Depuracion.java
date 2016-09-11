@@ -11,11 +11,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.ImageIcon;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.xml.parsers.DocumentBuilder;
@@ -36,6 +42,7 @@ public class Depuracion {
 	private List<Parametro> parametros = new ArrayList<>();
 	private List<String> lineas = new ArrayList<>();
 	private List<Node> sentencias = new ArrayList<>();
+	private List<String> sentenciasFinales = new ArrayList<>();
 
 	File archivo = new File("depuracion/codigo.proc");
 
@@ -44,7 +51,7 @@ public class Depuracion {
 
 	int lineaBegin = 0;
 
-	List<String> codigoInicial = new ArrayList<>();
+	String codigoInicial = "";
 
 	public Depuracion(Principal ventana) {
 		this.ventana = ventana;
@@ -59,26 +66,6 @@ public class Depuracion {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	}
-
-	public void extraerCodigoInicial() {
-		try {
-			File fXmlFile = new File("ctrl.xml");
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(fXmlFile);
-
-			doc.getDocumentElement().normalize();
-
-			NodeList nList = doc.getElementsByTagName("procedimiento");
-			Element begin = (Element) nList.item(0);
-			for (int i = 0; i < Integer.parseInt(begin.getAttribute("begin")); i++) {
-				this.codigoInicial.add(lineas.get(i).toString());
-			}
-			this.lineaBegin = Integer.parseInt(begin.getAttribute("begin"));
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 	}
 
@@ -111,38 +98,16 @@ public class Depuracion {
 					this.sentencias.add(sentence.item(i));
 				}
 			}
-			// calcularPosicionCaret(Integer.parseInt(((Element)
-			// this.sentencias.get(0)).getAttribute("inicio")));
 			this.sentenciaPos = 0;
 			this.linea = Integer.parseInt(((Element) this.sentencias.get(0)).getAttribute("inicio"));
-			//System.out.println(this.linea);
 			calcularPosicionCaret(this.linea);
 			
-			try {
-				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
-				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(this.linea-1, 
-						new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
-			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			extraerCodigoInicial();
-
-			for (int i = codigoInicial.size() - 1; i >= lineaBegin; i--) {
-				codigoInicial.remove(i);
-			}
-			for (int i = 0; i <= sentenciaPos; i++) {
-				codigoInicial.add(((Element) (sentencias.get(i))).getAttribute("valor"));
-				// System.out.println(((Element)(sentencias.get(i))).getAttribute("valor"));
-			}
-			codigoInicial.add("END");
-			for (int i = 0; i < codigoInicial.size(); i++) {
-				System.out.println(codigoInicial.get(i).toString());
-			}
-
+			this.codigoInicial = ((Element)root).getAttribute("valor");
+			this.sentenciasFinales.add(traducirSentencia(this.sentencias.get(this.sentenciaPos)));
+			
+			
 			ejecutarCodigoFinal();
-
+			
 			ventana.barra.play_pausado.setEnabled(false);
 			ventana.barra.play.setEnabled(false);
 			ventana.barra.siguiente.setEnabled(true);
@@ -153,12 +118,54 @@ public class Depuracion {
 			
 			ventana.arbolBD.setEnabled(false);
 			
+			try {
+				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(this.linea-1, 
+						new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 	}
-
+	
+	String traducirSentencia(Node sentence) {
+		String linea = "";
+		Node sentencia = this.sentencias.get(this.sentenciaPos);
+		Element elemento = (Element) sentencia;
+		if(elemento.getAttribute("tipo").equals("declaracion")) {
+			linea = elemento.getAttribute("valor");
+		} else if(elemento.getAttribute("tipo").equals("asignacion")) {
+			linea = elemento.getAttribute("valor");
+		} else if(elemento.getAttribute("tipo").equals("consulta")) {
+			linea = elemento.getAttribute("valor");
+			ejecutarSQL(elemento);
+		}
+		return linea;
+	}
+	
+	void ejecutarSQL(Node sentencia){
+		Statement sentenciasql = null;
+		try {
+			sentenciasql = ventana.conexion.getConexion().createStatement();
+			boolean tipo = sentenciasql.execute(((Element)sentencia).getAttribute("valor"));
+			if (tipo) {
+				Utilidades utilidades = new Utilidades();
+				utilidades.consultar(((Element)sentencia).getAttribute("valor"), ventana); 
+			} else {
+				Imprimir.imprimirConsola(ventana.consola, "Sentencia SQL ejecutada correctamente.");
+				ventana.consolas.setSelectedTab(0);
+			}
+		} catch (Exception ex) {
+			Imprimir.imprimirConsola(ventana.consolaErrores, ex.getMessage());
+			ventana.consolas.setSelectedTab(1);
+		}
+		
+	}
+	
 	void calcularPosicionCaret(int linea) {
 		int posicion = 0;
 		if (linea == 1) {
@@ -302,17 +309,8 @@ public class Depuracion {
 			this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
 			calcularPosicionCaret(
 					Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
-
-			for (int i = codigoInicial.size() - 1; i >= lineaBegin; i--) {
-				codigoInicial.remove(i);
-			}
-			for (int i = 0; i <= sentenciaPos; i++) {
-				codigoInicial.add(((Element) (sentencias.get(i))).getAttribute("valor"));
-			}
-			codigoInicial.add("END");
-			for (int i = 0; i < codigoInicial.size(); i++) {
-				System.out.println(codigoInicial.get(i).toString());
-			}
+			this.sentenciasFinales.add(traducirSentencia(this.sentencias.get(this.sentenciaPos)));
+			
 			try {
 				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
 				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(linea-1, 
@@ -324,6 +322,7 @@ public class Depuracion {
 			ejecutarCodigoFinal();
 		}
 	}
+	
 
 	public void atras() {
 		if (sentenciaPos > 0) {
@@ -332,16 +331,9 @@ public class Depuracion {
 			calcularPosicionCaret(
 					Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
 
-			for (int i = codigoInicial.size() - 1; i >= lineaBegin; i--) {
-				codigoInicial.remove(i);
-			}
-			for (int i = 0; i <= sentenciaPos; i++) {
-				codigoInicial.add(((Element) (sentencias.get(i))).getAttribute("valor"));
-			}
-			codigoInicial.add("END");
-			for (int i = 0; i < codigoInicial.size(); i++) {
-				System.out.println(codigoInicial.get(i).toString());
-			}
+			
+			this.sentenciasFinales.remove(this.sentenciaPos+1);
+			
 			ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
 			try {
 				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(linea-1, 
@@ -376,10 +368,11 @@ public class Depuracion {
 			File archivo = new File("depuracion/codigoFinal.proc");
 			archivo.createNewFile();
 			FileWriter escritor = new FileWriter(archivo);
-			String codigo = "";
-			for (int i = 0; i < codigoInicial.size(); i++) {
-				codigo += codigoInicial.get(i).toString() + "\n";
+			String codigo = this.codigoInicial+"\n";
+			for(int i = 0; i<this.sentenciasFinales.size(); i++) {
+				codigo += this.sentenciasFinales.get(i)+"\n";
 			}
+			codigo += "END";
 			escritor.write(codigo);
 			escritor.close();
 

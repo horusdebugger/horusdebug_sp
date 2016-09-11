@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(in nombre varchar(50), in edad int)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(IN nombre VARCHAR(50), IN edad INT)
 BEGIN
 	DECLARE n1 INT;
 	DECLARE n2 int;
@@ -6,7 +6,7 @@ BEGIN
 	SELECT 
 	* 
 	FROM
-	persona WHERE id=n1;
+	personas WHERE id=2;
 	
 	
 	

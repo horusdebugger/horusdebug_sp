@@ -1,9 +1,10 @@
 <?xml version='1.0'?>
-<procedimiento inicio="1" begin="2" end="15" >
+<procedimiento inicio="1" begin="2" end="15" valor="CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(in nombre varchar(50), in edad int)
+BEGIN">
 <sentencia id="1" tipo="declaracion" inicio="3" final="3" valor="DECLARE n1 INT;" />
 <sentencia id="2" tipo="declaracion" inicio="4" final="4" valor="DECLARE n2 INT;" />
 <sentencia id="3" tipo="asignacion" inicio="5" final="5" valor="set n1=21;" />
-<sentencia id="4" tipo="consulta" inicio="6" final="9" valor="select * from table1 where id=n1;" />
+<sentencia id="4" tipo="consulta" inicio="6" final="9" valor="select * from personas where id=2;” />
 <sentencia id="5" tipo="asignacion" inicio="13" final="13" valor="set n2 = 2;" />
 <sentencia id="6" tipo="asignacion" inicio="14" final="14" valor="set n1 = 25;" />
 </procedimiento>
