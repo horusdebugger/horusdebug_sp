@@ -1,10 +1,14 @@
 <?xml version='1.0'?>
-<procedimiento inicio="1" begin="2" end="15" valor="CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(in nombre varchar(50), in edad int)
-BEGIN">
-<sentencia id="1" tipo="declaracion" inicio="3" final="3" valor="DECLARE n1 INT;" />
-<sentencia id="2" tipo="declaracion" inicio="4" final="4" valor="DECLARE n2 INT;" />
-<sentencia id="3" tipo="asignacion" inicio="5" final="5" valor="set n1=21;" />
-<sentencia id="4" tipo="consulta" inicio="6" final="9" valor="select * from personas where id=2;” />
-<sentencia id="5" tipo="asignacion" inicio="13" final="13" valor="set n2 = 2;" />
-<sentencia id="6" tipo="asignacion" inicio="14" final="14" valor="set n1 = 25;" />
+<procedimiento inicio="1" begin="2" end="26" >
+<sentencia id="1" tipo="declaracion" inicio="4" final="4" valor="DECLARE n1 INT;" />
+<sentencia id="2" tipo="declaracion" inicio="5" final="5" valor="DECLARE n2 INT ;" />
+<sentencia id="3" tipo="declaracion" inicio="6" final="6" valor="DECLARE n3 INT ;" />
+<sentencia id="4" tipo="asignacion" inicio="7" final="7" valor="set n1 = 21 ;" oprn1="n1" opr="=" oprn2="21" toprn2="valor" toprn1="(null)" />
+<sentencia id="8" tipo="if" inicio="11" final="15" valor="" />
+<sentencia id="7" tipo="asignacion" inicio="14" final="14" valor="set n3 = 10;" oprn1="n3" opr="=" oprn2="10" toprn2="valor" toprn1="(null)" />
+<sentencia id="12" tipo="if" inicio="9" final="20" valor="" />
+<sentencia id="5" tipo="asignacion" inicio="10" final="10" valor="set n1 = 30;" oprn1="n1" opr="=" oprn2="30" toprn2="valor" toprn1="(null)" />
+<sentencia id="9" tipo="asignacion" inicio="16" final="16" valor="set n2 = 50;" oprn1="n2" opr="=" oprn2="50" toprn2="valor" toprn1="(null)" />
+<sentencia id="13" tipo="escalar" inicio="22" final="22" valor="" oprn1="n1" opr="=" oprn2="SELECT t.id FROM personas t WHERE id = 10" toprn2="consulta" toprn1="int" />
+<sentencia id="14" tipo="delete" inicio="24" final="24" valor="DELETE FROM personas WHERE id = 50 + 8 - 0 ;" />
 </procedimiento>

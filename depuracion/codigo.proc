@@ -1,15 +1,26 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(IN nombre VARCHAR(50), IN edad INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento`(IN id INT)
 BEGIN
-	DECLARE n1 INT;
-	DECLARE n2 int;
-	SET n1 = 21;
-	SELECT 
-	* 
-	FROM
-	personas WHERE id=2;
+
+DECLARE n1 INT;
+		DECLARE n2 INT;
+		DECLARE n3 INT;
+		set n1=21;
 	
-	
-	
-	SET n2 = 2;
-	SET n1 = 25;
+		if n1 = 21 then
+			set n1=30;
+			if n1 = 27 then
+				set n2=50;
+			else
+				set n3=10;
+			end if;
+			set n2=50;
+		else
+			set n1=40;
+			set n3=10;
+		end if;
+		
+		select t.id into n1 from personas t where id=n3;
+		
+			delete from personas where id=n2+8-id;
+
 END

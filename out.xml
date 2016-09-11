@@ -1,14 +1,14 @@
 <?xml version='1.0'?>
 <variables>
 <variable>
-<nombre>edad</nombre>
+<nombre>id</nombre>
 <tipo>int</tipo>
-<valor>35</valor>
+<valor>78</valor>
 </variable>
 <variable>
-<nombre>nombre</nombre>
-<tipo>varchar</tipo>
-<valor>CONESCAPAN</valor>
+<nombre>n3</nombre>
+<tipo>int</tipo>
+<valor>10</valor>
 </variable>
 <variable>
 <nombre>n2</nombre>

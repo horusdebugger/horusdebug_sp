@@ -190,7 +190,7 @@ public class BDArbol extends JTree {
 					proc.setNombre(rsProcedimientos.getString("Name"));
 					procs.add(proc);
 				}
-				System.out.println("A punto de entrar en llenado de campos...");
+				//System.out.println("A punto de entrar en llenado de campos...");
 				for (int i = 0; i < folder_tablas.getTablas().size(); i++) {
 					Statement stmtCampos = ventana.conexion.getConexion().createStatement();
 					ResultSet rsCampos = stmtCampos.executeQuery(
@@ -198,8 +198,8 @@ public class BDArbol extends JTree {
 									+ bd.getNombre() + "' AND `TABLE_NAME`='" + folder_tablas.getTablas().get(i).getNombre() + "';");
 					
 					ArrayList<BDTablaCampo> listaCampos = new ArrayList<>();
-					System.out.println("SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS` WHERE `TABLE_SCHEMA`='"
-									+ bd.getNombre() + "' AND `TABLE_NAME`='" + folder_tablas.getTablas().get(i).getNombre() + "'");
+					//System.out.println("SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS` WHERE `TABLE_SCHEMA`='"
+									//+ bd.getNombre() + "' AND `TABLE_NAME`='" + folder_tablas.getTablas().get(i).getNombre() + "'");
 					while (rsCampos.next()) {
 						BDTablaCampo campo = new BDTablaCampo();
 						campo.setNombre(rsCampos.getString("COLUMN_NAME"));

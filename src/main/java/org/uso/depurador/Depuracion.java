@@ -102,7 +102,8 @@ public class Depuracion {
 			this.linea = Integer.parseInt(((Element) this.sentencias.get(0)).getAttribute("inicio"));
 			calcularPosicionCaret(this.linea);
 			
-			this.codigoInicial = ((Element)root).getAttribute("valor");
+			this.codigoInicial = "CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento`(IN id INT) "
+					+ "BEGIN"/*((Element)root).getAttribute("valor")*/;
 			this.sentenciasFinales.add(traducirSentencia(this.sentencias.get(this.sentenciaPos)));
 			
 			
@@ -143,7 +144,11 @@ public class Depuracion {
 		} else if(elemento.getAttribute("tipo").equals("consulta")) {
 			linea = elemento.getAttribute("valor");
 			ejecutarSQL(elemento);
-		}
+		} else if(elemento.getAttribute("tipo").equals("if")) {
+			linea = elemento.getAttribute("valor");
+		} /*else if(elemento.getAttribute("tipo").equals("")) {
+			
+		}*/
 		return linea;
 	}
 	
@@ -182,21 +187,21 @@ public class Depuracion {
 	public void ejecutarDepuradorPausado() {
 		try {
 
-			/*Runtime rt = Runtime.getRuntime();
-			String[] comandos = new String[this.parametros.size() + 3];
-			for (int i = 0; i <= this.parametros.size() + 2; i++) {
+			Runtime rt = Runtime.getRuntime();
+			String[] comandos = new String[3];
+			for (int i = 0; i < comandos.length; i++) {
 				if (i == 0) {
 					comandos[i] = "depuracion/dep.exe";
 				} else if (i == 1) {
 					comandos[i] = "depuracion/codigo.proc";
 				} else if (i == 2) {
 					comandos[i] = "-x";
-				} else {
+				} /*else {
 					comandos[i] = this.parametros.get(i - 3).getValor();
-				}
+				}*/
 			}
 
-			// System.out.println(Arrays.toString(comandos));
+			System.out.println(Arrays.toString(comandos));
 
 			Process proc = rt.exec(comandos);
 
@@ -212,12 +217,11 @@ public class Depuracion {
 				mensajes += salida + "\n";
 			}
 			if (!mensajes.equals("")) {
-				Imprimir.imprimirConsola(ventana.consolaErrores, mensajes);
+				Imprimir.imprimirConsola(ventana.consola, mensajes);
 			}
 			Utilidades util = new Utilidades();
 			util.LeerArchivoXMLVariables("out.xml");
 			util.getTablaXMLVariables(ventana.tablaVariables);
-*/
 			ventana.scrollEditorDebug.getGutter().setBookmarkingEnabled(false);
 			moverBegin();
 		} catch (Exception ex) {
@@ -380,7 +384,7 @@ public class Depuracion {
 			String[] comandos = new String[this.parametros.size() + 2];
 			for (int i = 0; i <= this.parametros.size() + 1; i++) {
 				if (i == 0) {
-					comandos[i] = "depuracion/dep";
+					comandos[i] = "depuracion/dep.exe";
 				} else if (i == 1) {
 					comandos[i] = "depuracion/codigoFinal.proc";
 				} else {
@@ -388,6 +392,8 @@ public class Depuracion {
 				}
 			}
 
+			//System.out.println(Arrays.toString(comandos));
+			
 			Process proc = rt.exec(comandos);
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
