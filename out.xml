@@ -6,11 +6,6 @@
 <valor>78</valor>
 </variable>
 <variable>
-<nombre>n3</nombre>
-<tipo>int</tipo>
-<valor>10</valor>
-</variable>
-<variable>
 <nombre>n2</nombre>
 <tipo>int</tipo>
 <valor>0</valor>
@@ -18,6 +13,6 @@
 <variable>
 <nombre>n1</nombre>
 <tipo>int</tipo>
-<valor>21</valor>
+<valor>27</valor>
 </variable>
 </variables>

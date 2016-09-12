@@ -36,6 +36,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
+
 public class Depuracion {
 
 	public Principal ventana;
@@ -141,15 +143,32 @@ public class Depuracion {
 			linea = elemento.getAttribute("valor");
 		} else if(elemento.getAttribute("tipo").equals("asignacion")) {
 			linea = elemento.getAttribute("valor");
-		} else if(elemento.getAttribute("tipo").equals("consulta")) {
+		} else if(elemento.getAttribute("tipo").equals("select")) {
 			linea = elemento.getAttribute("valor");
 			ejecutarSQL(elemento);
 		} else if(elemento.getAttribute("tipo").equals("if")) {
 			linea = elemento.getAttribute("valor");
-		} /*else if(elemento.getAttribute("tipo").equals("")) {
+		} else if(elemento.getAttribute("tipo").equals("escalar")) {
+			String cad = elemento.getAttribute("oprn1");
+			cad += elemento.getAttribute("opr");
+			cad += getValor(elemento);
 			
-		}*/
+		}
 		return linea;
+	}
+	
+	String getValor(Element nodo) {
+		String valor = "";
+		try {
+			Statement st = ventana.conexion.getConexion().createStatement();
+			ResultSet rs = st.executeQuery(nodo.getAttribute("oprn2"));
+			while(rs.next()) {
+				//valor = rs.getString();
+			}
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
 	}
 	
 	void ejecutarSQL(Node sentencia){

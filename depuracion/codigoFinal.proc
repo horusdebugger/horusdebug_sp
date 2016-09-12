@@ -1,9 +1,6 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento`(IN id INT) BEGIN
-DECLARE n1 INT;
-DECLARE n2 INT ;
-DECLARE n3 INT ;
-set n1 = 21 ;
-
-set n3 = 10;
-
+declare n1 INT;
+declare n2 INT ;
+set n1 = 27 ;
+select * FROM  personas ;
 END
