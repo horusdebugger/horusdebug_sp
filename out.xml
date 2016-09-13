@@ -3,7 +3,7 @@
 <variable>
 <nombre>id</nombre>
 <tipo>int</tipo>
-<valor>78</valor>
+<valor>25</valor>
 </variable>
 <variable>
 <nombre>n2</nombre>
@@ -13,6 +13,6 @@
 <variable>
 <nombre>n1</nombre>
 <tipo>int</tipo>
-<valor>27</valor>
+<valor>25</valor>
 </variable>
 </variables>

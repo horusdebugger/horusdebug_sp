@@ -106,7 +106,7 @@ public class Depuracion {
 			
 			this.codigoInicial = "CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento`(IN id INT) "
 					+ "BEGIN"/*((Element)root).getAttribute("valor")*/;
-			this.sentenciasFinales.add(traducirSentencia(this.sentencias.get(this.sentenciaPos)));
+			this.sentenciasFinales.add(traducirSentencia());
 			
 			
 			ejecutarCodigoFinal();
@@ -135,14 +135,16 @@ public class Depuracion {
 		
 	}
 	
-	String traducirSentencia(Node sentence) {
+	String traducirSentencia() {
 		String linea = "";
 		Node sentencia = this.sentencias.get(this.sentenciaPos);
 		Element elemento = (Element) sentencia;
 		if(elemento.getAttribute("tipo").equals("declaracion")) {
 			linea = elemento.getAttribute("valor");
+			ventana.consolas.setSelectedTab(3);
 		} else if(elemento.getAttribute("tipo").equals("asignacion")) {
 			linea = elemento.getAttribute("valor");
+			ventana.consolas.setSelectedTab(3);
 		} else if(elemento.getAttribute("tipo").equals("select")) {
 			linea = elemento.getAttribute("valor");
 			ejecutarSQL(elemento);
@@ -152,7 +154,6 @@ public class Depuracion {
 			String cad = elemento.getAttribute("oprn1");
 			cad += elemento.getAttribute("opr");
 			cad += getValor(elemento);
-			
 		}
 		return linea;
 	}
@@ -332,7 +333,7 @@ public class Depuracion {
 			this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
 			calcularPosicionCaret(
 					Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
-			this.sentenciasFinales.add(traducirSentencia(this.sentencias.get(this.sentenciaPos)));
+			this.sentenciasFinales.add(traducirSentencia());
 			
 			try {
 				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
@@ -354,7 +355,7 @@ public class Depuracion {
 			calcularPosicionCaret(
 					Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
 
-			
+			traducirSentencia();
 			this.sentenciasFinales.remove(this.sentenciaPos+1);
 			
 			ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();

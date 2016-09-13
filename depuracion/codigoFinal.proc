@@ -1,6 +1,6 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento`(IN id INT) BEGIN
 declare n1 INT;
 declare n2 INT ;
-set n1 = 27 ;
-select * FROM  personas ;
+set n1 = 25 ;
+select * FROM  persona ;
 END

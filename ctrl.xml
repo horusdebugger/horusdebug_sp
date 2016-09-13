@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
-<procedimiento inicio="1" begin="2" end="10" >
+<procedimiento inicio="1" begin="2" end="7" >
 <sentencia id="1" tipo="declaracion" inicio="3" final="3" valor="declare n1 INT;" />
 <sentencia id="2" tipo="declaracion" inicio="4" final="4" valor="declare n2 INT ;" />
-<sentencia id="3" tipo="asignacion" inicio="5" final="5" valor="set n1 = 27 ;" oprn1="n1" opr="=" oprn2="27" toprn2="valor" toprn1="(null)" />
-<sentencia id="4" tipo="select" inicio="7" final="9" valor="select * FROM  personas ;" />
+<sentencia id="3" tipo="asignacion" inicio="5" final="5" valor="set n1 = 25 ;" oprn1="n1" opr="=" oprn2="25" toprn2="valor" toprn1="(null)" />
+<sentencia id="4" tipo="select" inicio="6" final="6" valor="select * FROM  persona ;" />
 </procedimiento>
