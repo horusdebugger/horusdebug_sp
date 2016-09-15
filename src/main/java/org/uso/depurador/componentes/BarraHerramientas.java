@@ -195,7 +195,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 				ventana.consolas.setSelectedTab(0);
 			}
 		} catch (Exception ex) {
-			Imprimir.imprimirConsola(ventana.consolaErrores, ex.getMessage());
+			Imprimir.imprimirConsolaError(ventana.consolaErrores, ex.getMessage());
 			ventana.consolas.setSelectedTab(1);
 		}
 	}

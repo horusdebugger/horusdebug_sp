@@ -4,4 +4,6 @@ begin
 	declare n2 int;
 	set n1 = 25;
 	select * from persona;
+	delete from persona where id = 6;
+	insert into persona(id, nombre) values(1, 'Omar');
 end

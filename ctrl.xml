@@ -1,7 +1,9 @@
 <?xml version='1.0'?>
-<procedimiento inicio="1" begin="2" end="7" >
+<procedimiento inicio="1" begin="2" end="9" >
 <sentencia id="1" tipo="declaracion" inicio="3" final="3" valor="declare n1 INT;" />
 <sentencia id="2" tipo="declaracion" inicio="4" final="4" valor="declare n2 INT ;" />
 <sentencia id="3" tipo="asignacion" inicio="5" final="5" valor="set n1 = 25 ;" oprn1="n1" opr="=" oprn2="25" toprn2="valor" toprn1="(null)" />
 <sentencia id="4" tipo="select" inicio="6" final="6" valor="select * FROM  persona ;" />
+<sentencia id="5" tipo="delete" inicio="7" final="7" valor="DELETE FROM persona WHERE id = 6 ;" />
+<sentencia id="6" tipo="insert" inicio="8" final="8" valor="insert INTO persona (id, nombre) VALUES (1,'Omar') ;" />
 </procedimiento>

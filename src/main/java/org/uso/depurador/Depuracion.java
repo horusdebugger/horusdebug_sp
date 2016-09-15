@@ -1,29 +1,20 @@
 package org.uso.depurador;
 
 import java.awt.Color;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.ImageIcon;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -35,8 +26,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
 
 public class Depuracion {
 
@@ -154,6 +143,15 @@ public class Depuracion {
 			String cad = elemento.getAttribute("oprn1");
 			cad += elemento.getAttribute("opr");
 			cad += getValor(elemento);
+		} else if(elemento.getAttribute("tipo").equals("delete")) {
+			linea = elemento.getAttribute("valor");
+			ejecutarSQL(elemento);
+		} else if(elemento.getAttribute("tipo").equals("insert")) {
+			linea = elemento.getAttribute("valor");
+			ejecutarSQL(elemento);
+		} else if(elemento.getAttribute("tipo").equals("update")) {
+			linea = elemento.getAttribute("valor");
+			ejecutarSQL(elemento);
 		}
 		return linea;
 	}
@@ -174,22 +172,29 @@ public class Depuracion {
 	
 	void ejecutarSQL(Node sentencia){
 		Statement sentenciasql = null;
+		String sql =  ((Element)sentencia).getAttribute("valor");
 		try {
 			sentenciasql = ventana.conexion.getConexion().createStatement();
-			boolean tipo = sentenciasql.execute(((Element)sentencia).getAttribute("valor"));
+			boolean tipo = sentenciasql.execute(sql);
+			System.out.println("Sentencia: " + sql);
 			if (tipo) {
 				Utilidades utilidades = new Utilidades();
 				utilidades.consultar(((Element)sentencia).getAttribute("valor"), ventana); 
 			} else {
 				Imprimir.imprimirConsola(ventana.consola, "Sentencia SQL ejecutada correctamente.");
+				Imprimir.imprimirConsola(ventana.consola, "Filas afectadas: "+sentenciasql.getUpdateCount());
 				ventana.consolas.setSelectedTab(0);
 			}
+			System.out.println("Entra bien!");
 		} catch (Exception ex) {
+			System.out.println("Entra mal!");
+			ex.printStackTrace();
 			Imprimir.imprimirConsola(ventana.consolaErrores, ex.getMessage());
 			ventana.consolas.setSelectedTab(1);
 		}
 		
 	}
+	
 	
 	void calcularPosicionCaret(int linea) {
 		int posicion = 0;
