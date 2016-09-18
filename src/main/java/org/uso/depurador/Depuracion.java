@@ -3,11 +3,15 @@ package org.uso.depurador;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +31,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import jdk.internal.org.xml.sax.InputSource;
+
 public class Depuracion {
 
 	public Principal ventana;
@@ -35,7 +41,7 @@ public class Depuracion {
 	private List<Node> sentencias = new ArrayList<>();
 	private List<String> sentenciasFinales = new ArrayList<>();
 
-	File archivo = new File("depuracion/codigo.proc");
+	File archivo = new File("codigo.proc");
 
 	int linea = 0;
 	int sentenciaPos = 0;
@@ -77,6 +83,7 @@ public class Depuracion {
 			File fXmlFile = new File("ctrl.xml");
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			
 			Document doc = dBuilder.parse(fXmlFile);
 
 			doc.getDocumentElement().normalize();
@@ -93,11 +100,9 @@ public class Depuracion {
 			this.linea = Integer.parseInt(((Element) this.sentencias.get(0)).getAttribute("inicio"));
 			calcularPosicionCaret(this.linea);
 			
-			this.codigoInicial = "CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento`(IN id INT) "
-					+ "BEGIN"/*((Element)root).getAttribute("valor")*/;
+			this.codigoInicial = ((Element)root).getAttribute("valor");
 			this.sentenciasFinales.add(traducirSentencia());
-			
-			
+
 			ejecutarCodigoFinal();
 			
 			ventana.barra.play_pausado.setEnabled(false);
@@ -128,6 +133,7 @@ public class Depuracion {
 		String linea = "";
 		Node sentencia = this.sentencias.get(this.sentenciaPos);
 		Element elemento = (Element) sentencia;
+		
 		if(elemento.getAttribute("tipo").equals("declaracion")) {
 			linea = elemento.getAttribute("valor");
 			ventana.consolas.setSelectedTab(3);
@@ -138,11 +144,13 @@ public class Depuracion {
 			linea = elemento.getAttribute("valor");
 			ejecutarSQL(elemento);
 		} else if(elemento.getAttribute("tipo").equals("if")) {
-			linea = elemento.getAttribute("valor");
+			calcularPosicionCaret(Integer.parseInt(elemento.getAttribute("inicio")));
 		} else if(elemento.getAttribute("tipo").equals("escalar")) {
-			String cad = elemento.getAttribute("oprn1");
-			cad += elemento.getAttribute("opr");
-			cad += getValor(elemento);
+			linea += "SET ";
+			linea += elemento.getAttribute("oprn1") + " ";
+			linea += elemento.getAttribute("opr") + " ";
+			linea += getValor(elemento);
+			ventana.consolas.setSelectedTab(3);
 		} else if(elemento.getAttribute("tipo").equals("delete")) {
 			linea = elemento.getAttribute("valor");
 			ejecutarSQL(elemento);
@@ -160,14 +168,16 @@ public class Depuracion {
 		String valor = "";
 		try {
 			Statement st = ventana.conexion.getConexion().createStatement();
+			System.out.println("OPRN2: " + nodo.getAttribute("oprn2"));
 			ResultSet rs = st.executeQuery(nodo.getAttribute("oprn2"));
 			while(rs.next()) {
-				//valor = rs.getString();
+				valor = rs.getString(1);
 			}
+			System.out.println("VALOR: " + valor);
 		} catch(Exception ex) {
 			ex.printStackTrace();
 		}
-		return null;
+		return valor+" ;";
 	}
 	
 	void ejecutarSQL(Node sentencia){
@@ -185,14 +195,11 @@ public class Depuracion {
 				Imprimir.imprimirConsola(ventana.consola, "Filas afectadas: "+sentenciasql.getUpdateCount());
 				ventana.consolas.setSelectedTab(0);
 			}
-			System.out.println("Entra bien!");
 		} catch (Exception ex) {
-			System.out.println("Entra mal!");
 			ex.printStackTrace();
 			Imprimir.imprimirConsola(ventana.consolaErrores, ex.getMessage());
 			ventana.consolas.setSelectedTab(1);
 		}
-		
 	}
 	
 	
@@ -214,17 +221,12 @@ public class Depuracion {
 
 			Runtime rt = Runtime.getRuntime();
 			String[] comandos = new String[3];
-			for (int i = 0; i < comandos.length; i++) {
-				if (i == 0) {
-					comandos[i] = "depuracion/dep.exe";
-				} else if (i == 1) {
-					comandos[i] = "depuracion/codigo.proc";
-				} else if (i == 2) {
-					comandos[i] = "-x";
-				} /*else {
-					comandos[i] = this.parametros.get(i - 3).getValor();
-				}*/
-			}
+					comandos[0] = "dep.exe";
+
+					comandos[1] = "codigo.proc";
+
+					comandos[2] = "-x";
+
 
 			System.out.println(Arrays.toString(comandos));
 
@@ -234,7 +236,7 @@ public class Depuracion {
 
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
-			System.out.println("Salida del programa:\n");
+			//System.out.println("Salida del programa:\n");
 
 			String salida = null;
 			String mensajes = "";
@@ -269,9 +271,9 @@ public class Depuracion {
 			String[] comandos = new String[this.parametros.size() + 2];
 			for (int i = 0; i <= this.parametros.size() + 1; i++) {
 				if (i == 0) {
-					comandos[i] = "depuracion/dep";
+					comandos[i] = "dep.exe";
 				} else if (i == 1) {
-					comandos[i] = "depuracion/codigo.proc";
+					comandos[i] = "codigo.proc";
 				} else {
 					comandos[i] = this.parametros.get(i - 2).getValor();
 				}
@@ -283,7 +285,7 @@ public class Depuracion {
 
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
-			System.out.println("Salida del programa:\n");
+			//System.out.println("Salida del programa:\n");
 			try {
 				String salida = null;
 				String mensajes = "";
@@ -394,7 +396,7 @@ public class Depuracion {
 
 	public void ejecutarCodigoFinal() {
 		try {
-			File archivo = new File("depuracion/codigoFinal.proc");
+			File archivo = new File("codigoFinal.proc");
 			archivo.createNewFile();
 			FileWriter escritor = new FileWriter(archivo);
 			String codigo = this.codigoInicial+"\n";
@@ -409,9 +411,9 @@ public class Depuracion {
 			String[] comandos = new String[this.parametros.size() + 2];
 			for (int i = 0; i <= this.parametros.size() + 1; i++) {
 				if (i == 0) {
-					comandos[i] = "depuracion/dep.exe";
+					comandos[i] = "dep.exe";
 				} else if (i == 1) {
-					comandos[i] = "depuracion/codigoFinal.proc";
+					comandos[i] = "codigoFinal.proc";
 				} else {
 					comandos[i] = this.parametros.get(i - 2).getValor();
 				}
