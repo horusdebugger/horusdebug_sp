@@ -1,27 +1,5 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2`(in v varchar(255), id int)
-BEGIN 
-		DECLARE n1 INT;
-		DECLARE n2 INT;
-		DECLARE n3 INT;
-		set n1=21;
-		delete from persona where id=6;
-		set n3=1;
-
-		if n3=1 then
-			set n2=10;
-			select * from persona;
-			insert into persona values(5,'jose');
-			if n2=0 then
-			  set n2=10;
-			else 
-				set n2=0;
-				  if n1=21 then
-				    set n3=50;
-				end if;	
-				set n1=50;
-				  
-			end if;		
-		end if;
-		
-		set n3=20;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento1`(IN nombre varchar(100), IN edad int)
+BEGIN
+	declare puesto int;
+	declare promedio int;
 END

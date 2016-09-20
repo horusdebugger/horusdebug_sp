@@ -163,14 +163,20 @@ public class Principal extends JFrame {
 		this.tablaVariables.setGridColor(Color.lightGray);
 		this.tablaConsultas.setBorder(new EtchedBorder(EtchedBorder.RAISED));
 		this.tablaConsultas.setGridColor(Color.lightGray);
-		/*
-		 * try {
-		 * UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		 * } catch (ClassNotFoundException e) { e.printStackTrace(); } catch
-		 * (InstantiationException e) { e.printStackTrace(); } catch
-		 * (IllegalAccessException e) { e.printStackTrace(); } catch
-		 * (UnsupportedLookAndFeelException e) { e.printStackTrace(); }
-		 */
+		this.setTitle("Depurador HORUS");
+
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	void crearDocks() {

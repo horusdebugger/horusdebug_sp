@@ -31,6 +31,8 @@ import jdk.nashorn.internal.runtime.regexp.joni.Config;
 
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -72,6 +74,17 @@ public class Login extends JFrame {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -218,7 +231,7 @@ public class Login extends JFrame {
 						String.valueOf(txtPass.getPassword()), txtPort.getText(), txtDB);
 				if (c.probarConexion()) {
 
-					JOptionPane.showMessageDialog(Login.this, "ConexiÃ³n exitosa!.", "EXITO!",
+					JOptionPane.showMessageDialog(Login.this, "Conexión exitosa!.", "EXITO!",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
 					JOptionPane.showMessageDialog(Login.this, "No se pudo conectar a MySQL. :(", "ERROR!",

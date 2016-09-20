@@ -2,6 +2,7 @@ package org.uso.depurador.componentes.arbol;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -14,13 +15,18 @@ import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 import org.uso.depurador.componentes.ScrollEditor;
 import org.uso.depurador.conexion.Conexion;
@@ -144,17 +150,16 @@ public class BDArbol extends JTree {
 	public void llenarArbol() {
 
 		bds.clear();
-		
+
 		// servidor de base de datos
 		BDServidor root = new BDServidor();
 		root.setNombre("mysql");
 		root.setIcono(servidorIcon);
-		
+
 		try {
 			Statement stmtBaseDeDatos = ventana.conexion.getConexion().createStatement();
 			ResultSet rs = stmtBaseDeDatos.executeQuery("show databases");
-			
-			
+
 			while (rs.next()) {
 				BD bd = new BD();
 				bd.setNombre(rs.getString("Database"));
@@ -182,7 +187,8 @@ public class BDArbol extends JTree {
 				folder_tablas.setTablas(tablas);
 
 				Statement stmtProcedimientos = ventana.conexion.getConexion().createStatement();
-				ResultSet rsProcedimientos = stmtProcedimientos.executeQuery("SHOW PROCEDURE STATUS WHERE db = '" + bd.getNombre() + "'");
+				ResultSet rsProcedimientos = stmtProcedimientos
+						.executeQuery("SHOW PROCEDURE STATUS WHERE db = '" + bd.getNombre() + "'");
 				ArrayList<BDProc> procs = new ArrayList<>();
 				while (rsProcedimientos.next()) {
 					BDProc proc = new BDProc();
@@ -190,16 +196,20 @@ public class BDArbol extends JTree {
 					proc.setNombre(rsProcedimientos.getString("Name"));
 					procs.add(proc);
 				}
-				//System.out.println("A punto de entrar en llenado de campos...");
+				// System.out.println("A punto de entrar en llenado de
+				// campos...");
 				for (int i = 0; i < folder_tablas.getTablas().size(); i++) {
 					Statement stmtCampos = ventana.conexion.getConexion().createStatement();
 					ResultSet rsCampos = stmtCampos.executeQuery(
 							"SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS` WHERE `TABLE_SCHEMA`='"
-									+ bd.getNombre() + "' AND `TABLE_NAME`='" + folder_tablas.getTablas().get(i).getNombre() + "';");
-					
+									+ bd.getNombre() + "' AND `TABLE_NAME`='"
+									+ folder_tablas.getTablas().get(i).getNombre() + "';");
+
 					ArrayList<BDTablaCampo> listaCampos = new ArrayList<>();
-					//System.out.println("SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS` WHERE `TABLE_SCHEMA`='"
-									//+ bd.getNombre() + "' AND `TABLE_NAME`='" + folder_tablas.getTablas().get(i).getNombre() + "'");
+					// System.out.println("SELECT `COLUMN_NAME` FROM
+					// `INFORMATION_SCHEMA`.`COLUMNS` WHERE `TABLE_SCHEMA`='"
+					// + bd.getNombre() + "' AND `TABLE_NAME`='" +
+					// folder_tablas.getTablas().get(i).getNombre() + "'");
 					while (rsCampos.next()) {
 						BDTablaCampo campo = new BDTablaCampo();
 						campo.setNombre(rsCampos.getString("COLUMN_NAME"));
@@ -227,6 +237,7 @@ public class BDArbol extends JTree {
 
 				for (BDProc proc : db.getProcedimientos()) {
 					DefaultMutableTreeNode nodo2 = new DefaultMutableTreeNode(proc);
+					nodo2.setAllowsChildren(false);
 					nodo.add(nodo2);
 				}
 				BDRootTabla folder_tabla = db.getFolder_tabla();
@@ -234,7 +245,7 @@ public class BDArbol extends JTree {
 
 				for (BDTabla tabla : folder_tabla.getTablas()) {
 					DefaultMutableTreeNode nodo4 = new DefaultMutableTreeNode(tabla);
-					for(BDTablaCampo campo : tabla.getCampos()) {
+					for (BDTablaCampo campo : tabla.getCampos()) {
 						DefaultMutableTreeNode nodo5 = new DefaultMutableTreeNode(campo);
 						nodo4.add(nodo5);
 					}
@@ -247,6 +258,123 @@ public class BDArbol extends JTree {
 
 			DefaultTreeModel modelo = new DefaultTreeModel(raiz);
 			this.setModel(modelo);
+			this.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					if (SwingUtilities.isRightMouseButton(e)) {
+						TreePath path = BDArbol.this.getPathForLocation(e.getX(), e.getY());
+						BDArbol.this.setSelectionPath(path);
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) BDArbol.this
+								.getLastSelectedPathComponent();
+						((DefaultTreeModel) BDArbol.this.getModel()).nodeChanged(node);
+						Object[] array = path.getPath();
+						int depth = array.length;
+						//System.out.println("Profundidad: " + depth);
+						Rectangle pathBounds = BDArbol.this.getUI().getPathBounds(BDArbol.this, path);
+						if (pathBounds != null && pathBounds.contains(e.getX(), e.getY()) && depth == 3
+								&& node.getAllowsChildren() == false) {
+
+							JPopupMenu menu = new JPopupMenu();
+							JMenuItem borrar = new JMenuItem("Borrar");
+							borrar.addActionListener(new ActionListener() {
+
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									if (JOptionPane.showConfirmDialog(ventana,
+											"Está seguro que desea borrar al procedimiento? \n" + node.toString(),
+											"ADVERTENCIA",  JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+										try {
+											Statement sentence = ventana.conexion.getConexion().createStatement();
+											sentence.executeUpdate("DROP PROCEDURE " + node.toString());
+											Imprimir.imprimirConsola(ventana.consola,
+													"Sentencia ejecutada correctamente.");
+											llenarArbol();
+											ventana.consolas.setSelectedTab(0);
+										} catch (Exception ex) {
+											Imprimir.imprimirConsola(ventana.consolaErrores, ex.getMessage());
+											ventana.consolas.setSelectedTab(1);
+										}
+									}
+								}
+							});
+							JMenuItem abrir = new JMenuItem("Abrir Procedimiento");
+							abrir.addActionListener(new ActionListener() {
+
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									
+									DefaultMutableTreeNode node = (DefaultMutableTreeNode) BDArbol.this.getLastSelectedPathComponent();
+									((DefaultTreeModel) BDArbol.this.getModel()).nodeChanged(node);
+									if (BDArbol.this.isEnabled()) {
+											if (node == null)
+												return;
+											Object padre = node.getParent().toString();
+											try {
+												Statement stmt = ventana.conexion.getConexion().createStatement();
+												ResultSet rs;
+
+												rs = stmt.executeQuery("SHOW CREATE PROCEDURE `" + padre.toString() + "`.`"
+														+ node.getUserObject().toString() + "`");
+												String contenido = null;
+												JButton boton = new JButton("<html><b>x</b></html>");
+												boton.setOpaque(false);
+												boton.setContentAreaFilled(false);
+												boton.setBorderPainted(false);
+												boton.addActionListener(new ActionListener() {
+
+													@Override
+													public void actionPerformed(ActionEvent arg0) {
+
+														if (ventana.barra.detener.isEnabled()) {
+															int opcion = JOptionPane.showConfirmDialog(ventana,
+																	"Desea cancelar la depuraciÃ³n en proceso?", "ADVERTENCIA",
+																	JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+															if (opcion == JOptionPane.OK_OPTION) {
+																ventana.editores.removeTab(ventana.pestanaDebug);
+																ventana.editorDebug
+																		.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
+															}
+														} else {
+															ventana.editores.removeTab(ventana.pestanaDebug);
+															ventana.editorDebug
+																	.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
+														}
+													}
+												});
+												while (rs.next()) {
+													contenido = rs.getString("Create Procedure");
+												}
+
+												if (ventana.editores.getTabCount() > 1) {
+													ventana.editores.removeTab(ventana.pestanaDebug);
+												}
+												ventana.pestanaDebug = new TitledTab("Procedimiento: " + node.getUserObject().toString(),
+														null, ventana.scrollEditorDebug, boton);
+												ventana.editorDebug.setText(contenido);
+												// ventana.editorDebug.setEditable(false);
+												ventana.editores.addTab(ventana.pestanaDebug);
+
+												ventana.procedimiento = "`" + padre.toString() + "`.`" + node.getUserObject().toString()
+														+ "`";
+												ventana.procedimiento_bd = node.getUserObject().toString();
+												ventana.editores.setSelectedTab(ventana.pestanaDebug);
+												ventana.barra.play.setEnabled(true);
+												ventana.barra.play_pausado.setEnabled(true);
+											} catch (Exception ex) {
+												ex.printStackTrace();
+											}
+										
+									}
+									
+								}
+							});
+							menu.add(abrir);
+							menu.add(new JSeparator());
+							menu.add(borrar);
+							menu.show(BDArbol.this, pathBounds.x, pathBounds.y + pathBounds.height);
+						}
+					}
+				}
+			});
 		} catch (Exception ex) {
 			Imprimir.imprimirConsolaError(ventana.consolaErrores, ex.getMessage());
 		}

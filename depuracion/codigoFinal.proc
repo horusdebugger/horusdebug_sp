@@ -1,8 +1,0 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2` (IN id1 INT,IN id2 INT) BEGIN
-DECLARE n1 INT;
-DECLARE n2 INT ;
-DECLARE n3 INT ;
-set n1 = 21 ;
-DELETE FROM persona WHERE id = 6 ;
-SET n3 = 
-END

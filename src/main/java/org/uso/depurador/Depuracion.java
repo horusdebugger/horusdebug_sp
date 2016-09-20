@@ -2,13 +2,17 @@ package org.uso.depurador;
 
 import java.awt.Color;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -22,6 +26,7 @@ import javax.swing.text.BadLocationException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.fife.ui.rtextarea.GutterIconInfo;
 import org.uso.depurador.componentes.Parametro;
 import org.uso.depurador.main.Principal;
 import org.uso.depurador.utlidades.Imprimir;
@@ -50,8 +55,16 @@ public class Depuracion {
 
 	String codigoInicial = "";
 
-	public Depuracion(Principal ventana) {
+	public boolean completa;
+
+	List<Integer> puntos = new ArrayList<>();
+
+	int lineaPunto = 0;
+	int puntoPos = 0;
+
+	public Depuracion(Principal ventana, boolean completa) {
 		this.ventana = ventana;
+		this.completa = completa;
 	}
 
 	public void iniciarDepuracionPausada() {
@@ -83,7 +96,7 @@ public class Depuracion {
 			File fXmlFile = new File("ctrl.xml");
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			
+
 			Document doc = dBuilder.parse(fXmlFile);
 
 			doc.getDocumentElement().normalize();
@@ -99,12 +112,12 @@ public class Depuracion {
 			this.sentenciaPos = 0;
 			this.linea = Integer.parseInt(((Element) this.sentencias.get(0)).getAttribute("inicio"));
 			calcularPosicionCaret(this.linea);
-			
-			this.codigoInicial = ((Element)root).getAttribute("valor");
+
+			this.codigoInicial = ((Element) root).getAttribute("valor");
 			this.sentenciasFinales.add(traducirSentencia());
 
 			ejecutarCodigoFinal();
-			
+
 			ventana.barra.play_pausado.setEnabled(false);
 			ventana.barra.play.setEnabled(false);
 			ventana.barra.siguiente.setEnabled(true);
@@ -112,87 +125,125 @@ public class Depuracion {
 			ventana.barra.detener.setEnabled(true);
 			ventana.editorDebug.setBackground(Color.lightGray);
 			ventana.editorDebug.setCurrentLineHighlightColor(Color.orange);
-			
+
 			ventana.arbolBD.setEnabled(false);
-			
+
 			try {
 				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
-				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(this.linea-1, 
-						new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
+				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(this.linea - 1, new ImageIcon(
+						getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
 			} catch (BadLocationException e) {
 				e.printStackTrace();
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	String traducirSentencia() {
+
+	String traducirSentencia(Node sentencia) {
 		String linea = "";
-		Node sentencia = this.sentencias.get(this.sentenciaPos);
 		Element elemento = (Element) sentencia;
-		
-		if(elemento.getAttribute("tipo").equals("declaracion")) {
+
+		if (elemento.getAttribute("tipo").equals("declaracion")) {
 			linea = elemento.getAttribute("valor");
 			ventana.consolas.setSelectedTab(3);
-		} else if(elemento.getAttribute("tipo").equals("asignacion")) {
+		} else if (elemento.getAttribute("tipo").equals("asignacion")) {
 			linea = elemento.getAttribute("valor");
 			ventana.consolas.setSelectedTab(3);
-		} else if(elemento.getAttribute("tipo").equals("select")) {
+		} else if (elemento.getAttribute("tipo").equals("select")) {
 			linea = elemento.getAttribute("valor");
 			ejecutarSQL(elemento);
-		} else if(elemento.getAttribute("tipo").equals("if")) {
+		} else if (elemento.getAttribute("tipo").equals("if")) {
 			calcularPosicionCaret(Integer.parseInt(elemento.getAttribute("inicio")));
-		} else if(elemento.getAttribute("tipo").equals("escalar")) {
+		} else if (elemento.getAttribute("tipo").equals("escalar")) {
 			linea += "SET ";
 			linea += elemento.getAttribute("oprn1") + " ";
 			linea += elemento.getAttribute("opr") + " ";
 			linea += getValor(elemento);
 			ventana.consolas.setSelectedTab(3);
-		} else if(elemento.getAttribute("tipo").equals("delete")) {
+		} else if (elemento.getAttribute("tipo").equals("delete")) {
 			linea = elemento.getAttribute("valor");
 			ejecutarSQL(elemento);
-		} else if(elemento.getAttribute("tipo").equals("insert")) {
+		} else if (elemento.getAttribute("tipo").equals("insert")) {
 			linea = elemento.getAttribute("valor");
 			ejecutarSQL(elemento);
-		} else if(elemento.getAttribute("tipo").equals("update")) {
+		} else if (elemento.getAttribute("tipo").equals("update")) {
 			linea = elemento.getAttribute("valor");
 			ejecutarSQL(elemento);
 		}
 		return linea;
 	}
-	
+
+	String traducirSentencia() {
+		String linea = "";
+		Node sentencia = this.sentencias.get(this.sentenciaPos);
+		Element elemento = (Element) sentencia;
+
+		if (elemento.getAttribute("tipo").equals("declaracion")) {
+			linea = elemento.getAttribute("valor");
+			ventana.consolas.setSelectedTab(3);
+		} else if (elemento.getAttribute("tipo").equals("asignacion")) {
+			linea = elemento.getAttribute("valor");
+			ventana.consolas.setSelectedTab(3);
+		} else if (elemento.getAttribute("tipo").equals("select")) {
+			linea = elemento.getAttribute("valor");
+			ejecutarSQL(elemento);
+		} else if (elemento.getAttribute("tipo").equals("if")) {
+			calcularPosicionCaret(Integer.parseInt(elemento.getAttribute("inicio")));
+		} else if (elemento.getAttribute("tipo").equals("escalar")) {
+			linea += "SET ";
+			linea += elemento.getAttribute("oprn1") + " ";
+			linea += elemento.getAttribute("opr") + " ";
+			linea += getValor(elemento);
+			ventana.consolas.setSelectedTab(3);
+		} else if (elemento.getAttribute("tipo").equals("delete")) {
+			linea = elemento.getAttribute("valor");
+			ejecutarSQL(elemento);
+		} else if (elemento.getAttribute("tipo").equals("insert")) {
+			linea = elemento.getAttribute("valor");
+			ejecutarSQL(elemento);
+		} else if (elemento.getAttribute("tipo").equals("update")) {
+			linea = elemento.getAttribute("valor");
+			ejecutarSQL(elemento);
+		} else if(elemento.getAttribute("tipo").equals("while")) {
+			calcularPosicionCaret(Integer.parseInt(elemento.getAttribute("inicio")));
+		} else if(elemento.getAttribute("tipo").equals("end")) {
+			calcularPosicionCaret(Integer.parseInt(elemento.getAttribute("inicio")));
+		}
+		return linea;
+	}
+
 	String getValor(Element nodo) {
 		String valor = "";
 		try {
 			Statement st = ventana.conexion.getConexion().createStatement();
 			System.out.println("OPRN2: " + nodo.getAttribute("oprn2"));
 			ResultSet rs = st.executeQuery(nodo.getAttribute("oprn2"));
-			while(rs.next()) {
+			while (rs.next()) {
 				valor = rs.getString(1);
 			}
 			System.out.println("VALOR: " + valor);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		return valor+" ;";
+		return valor + " ;";
 	}
-	
-	void ejecutarSQL(Node sentencia){
+
+	void ejecutarSQL(Node sentencia) {
 		Statement sentenciasql = null;
-		String sql =  ((Element)sentencia).getAttribute("valor");
+		String sql = ((Element) sentencia).getAttribute("valor");
 		try {
 			sentenciasql = ventana.conexion.getConexion().createStatement();
 			boolean tipo = sentenciasql.execute(sql);
-			System.out.println("Sentencia: " + sql);
+			// System.out.println("Sentencia: " + sql);
 			if (tipo) {
 				Utilidades utilidades = new Utilidades();
-				utilidades.consultar(((Element)sentencia).getAttribute("valor"), ventana); 
+				utilidades.consultar(((Element) sentencia).getAttribute("valor"), ventana);
 			} else {
 				Imprimir.imprimirConsola(ventana.consola, "Sentencia SQL ejecutada correctamente.");
-				Imprimir.imprimirConsola(ventana.consola, "Filas afectadas: "+sentenciasql.getUpdateCount());
+				Imprimir.imprimirConsola(ventana.consola, "Filas afectadas: " + sentenciasql.getUpdateCount());
 				ventana.consolas.setSelectedTab(0);
 			}
 		} catch (Exception ex) {
@@ -201,8 +252,7 @@ public class Depuracion {
 			ventana.consolas.setSelectedTab(1);
 		}
 	}
-	
-	
+
 	void calcularPosicionCaret(int linea) {
 		int posicion = 0;
 		if (linea == 1) {
@@ -221,12 +271,11 @@ public class Depuracion {
 
 			Runtime rt = Runtime.getRuntime();
 			String[] comandos = new String[3];
-					comandos[0] = "dep.exe";
+			comandos[0] = "dep.exe";
 
-					comandos[1] = "codigo.proc";
+			comandos[1] = "codigo.proc";
 
-					comandos[2] = "-x";
-
+			comandos[2] = "-x";
 
 			System.out.println(Arrays.toString(comandos));
 
@@ -236,7 +285,7 @@ public class Depuracion {
 
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
-			//System.out.println("Salida del programa:\n");
+			// System.out.println("Salida del programa:\n");
 
 			String salida = null;
 			String mensajes = "";
@@ -254,30 +303,27 @@ public class Depuracion {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		
+
 	}
 
 	public void escribirArchivo() throws Exception {
 		FileWriter writer = new FileWriter(this.archivo);
 		writer.write(ventana.editorDebug.getText());
-		// writer.flush();
 		writer.close();
 	}
 
 	public void ejecutarDepurador() {
 		try {
 
+			establecerPuntos();
+
 			Runtime rt = Runtime.getRuntime();
-			String[] comandos = new String[this.parametros.size() + 2];
-			for (int i = 0; i <= this.parametros.size() + 1; i++) {
-				if (i == 0) {
-					comandos[i] = "dep.exe";
-				} else if (i == 1) {
-					comandos[i] = "codigo.proc";
-				} else {
-					comandos[i] = this.parametros.get(i - 2).getValor();
-				}
-			}
+			String[] comandos = new String[3];
+			comandos[0] = "dep.exe";
+
+			comandos[1] = "codigo.proc";
+
+			comandos[2] = "-x";
 
 			Process proc = rt.exec(comandos);
 
@@ -285,41 +331,107 @@ public class Depuracion {
 
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
-			//System.out.println("Salida del programa:\n");
-			try {
-				String salida = null;
-				String mensajes = "";
-				while ((salida = stdInput.readLine()) != null) {
-					mensajes += salida + "\n";
-				}
-				if (!mensajes.equals("")) {
-					Imprimir.imprimirConsola(ventana.consola, mensajes);
-				}
-				Utilidades util = new Utilidades();
-				util.LeerArchivoXMLVariables("out.xml");
-				util.getTablaXMLVariables(ventana.tablaVariables);
+			String salida = null;
+			String mensajes = "";
+			while ((salida = stdInput.readLine()) != null) {
+				mensajes += salida + "\n";
+			}
+			if (!mensajes.equals("")) {
+				Imprimir.imprimirConsola(ventana.consola, mensajes);
+			}
+			Utilidades util = new Utilidades();
+			util.LeerArchivoXMLVariables("out.xml");
+			util.getTablaXMLVariables(ventana.tablaVariables);
 
-			} catch (IOException e) {
-				e.printStackTrace();
+			String err = null;
+			String errores = "";
+			while ((err = stdError.readLine()) != null) {
+				errores += err + "\n";
+				System.err.println(err);
+			}
+			if (!errores.equals("")) {
+				Imprimir.imprimirConsolaError(ventana.consolaErrores, errores);
 			}
 
-			System.out.println("Errores del programa:\n");
-			try {
-				String err = null;
-				String errores = "";
-				while ((err = stdError.readLine()) != null) {
-					errores += err + "\n";
-					System.err.println(err);
+			File fXmlFile = new File("ctrl.xml");
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+			Document doc = dBuilder.parse(fXmlFile);
+
+			doc.getDocumentElement().normalize();
+
+			NodeList nList = doc.getElementsByTagName("procedimiento");
+			Node root = nList.item(0);
+			NodeList sentence = root.getChildNodes();
+			for (int i = 0; i < sentence.getLength(); i++) {
+				if (sentence.item(i).getNodeType() == Node.ELEMENT_NODE) {
+					this.sentencias.add(sentence.item(i));
 				}
-				if (!errores.equals("")) {
-					Imprimir.imprimirConsolaError(ventana.consolaErrores, errores);
+			}
+			this.sentenciaPos = 0;
+			this.linea = Integer.parseInt(((Element) this.sentencias.get(0)).getAttribute("inicio"));
+			// calcularPosicionCaret(this.linea);
+
+			this.codigoInicial = ((Element) root).getAttribute("valor");
+			// this.sentenciasFinales.add(traducirSentencia());
+
+			// ejecutarCodigoFinal();
+
+			if (this.puntos.size() != 0) {
+				this.ventana.arbolBD.setEnabled(false);
+				this.ventana.barra.siguiente.setEnabled(true);
+				this.ventana.barra.atras.setEnabled(true);
+				this.ventana.barra.play.setEnabled(false);
+				this.ventana.barra.play_pausado.setEnabled(false);
+				this.ventana.barra.detener.setEnabled(true);
+				this.ventana.editorDebug.setBackground(Color.lightGray);
+				this.lineaPunto = puntos.get(0);
+				System.out.println("Lineapunto: " + this.lineaPunto);
+				this.puntoPos = 0;
+				int numSentencia = 0;
+				for (int i = 0; i < sentencias.size(); i++) {
+					if (this.lineaPunto >= Integer.parseInt(((Element) sentencias.get(i)).getAttribute("inicio"))) {
+						System.out.println(((Element) sentencias.get(i)).getAttribute("valor"));
+						this.sentenciaPos = (numSentencia++);
+					}
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
+			if (comprobarPosicionPuntoCorrecta()) {
+				for (int i = 0; i <= sentenciaPos; i++) {
+					this.sentenciasFinales.add(traducirSentencia(this.sentencias.get(i)));
+				}
+			}
+			ejecutarCodigoFinal();
+			calcularPosicionCaret(this.lineaPunto);
+			for (int i = 0; i < puntos.size(); i++) {
+				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(puntos.get(i) - 1,
+						new ImageIcon("breakpoint.png"));
+			}
+
+			} else {
+				for (int i = 0; i < sentencias.size(); i++) {
+					this.sentenciasFinales.add(traducirSentencia(this.sentencias.get(i)));
+				}
+				ejecutarCodigoFinal();
+				calcularPosicionCaret(Integer.parseInt(((Element)root).getAttribute("end")));
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	boolean comprobarPosicionPuntoCorrecta() {
+		boolean control = false;
+
+		for (int i = 0; i < sentencias.size(); i++) {
+
+				if (puntos.get(puntoPos) >= Integer.parseInt(((Element) sentencias.get(i)).getAttribute("inicio"))) {
+					control = true;
+					break;
+				}
+				
+		}
+		return control;
 	}
 
 	public void moverCaret(int pos) {
@@ -335,45 +447,125 @@ public class Depuracion {
 	}
 
 	public void siguiente() {
-		if (sentenciaPos < sentencias.size() - 1) {
-			this.sentenciaPos++;
-			this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
-			calcularPosicionCaret(
-					Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
-			this.sentenciasFinales.add(traducirSentencia());
-			
-			try {
-				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
-				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(linea-1, 
-						new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
-			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if (!completa) {
+			if (sentenciaPos < sentencias.size() - 1) {
+				this.sentenciaPos++;
+				this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
+				calcularPosicionCaret(
+						Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
+				this.sentenciasFinales.add(traducirSentencia());
+
+				try {
+					ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+					ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(linea - 1, new ImageIcon(
+							getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				ejecutarCodigoFinal();
 			}
-			ejecutarCodigoFinal();
+		} else {
+			sentenciasFinales.clear();
+			this.puntoPos++;
+			System.out.println("PuntoPos: " + puntoPos + " - " + "PuntosSize: " + this.puntos.size());
+			if (puntoPos == this.puntos.size()) {
+				ventana.barra.siguiente.setEnabled(false);
+				ventana.barra.atras.setEnabled(false);
+				ventana.barra.detener.setEnabled(false);
+				ventana.barra.play.setEnabled(true);
+				ventana.barra.play_pausado.setEnabled(true);
+				ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
+				ventana.arbolBD.setEnabled(true);
+				ventana.editorDebug.setBackground(Color.white);
+				ventana.editorDebug.setCaretPosition(ventana.editorDebug.getText().length());
+				ventana.scrollEditorDebug.getGutter().setBookmarkingEnabled(true);
+				ventana.editorDebug.setBackground(Color.white);
+				ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
+				ventana.depurador.completa = false;
+				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+			} else {
+				this.lineaPunto = puntos.get(puntoPos);
+
+				int numSentencia = 0;
+				for (int i = 0; i < sentencias.size(); i++) {
+
+					if (this.lineaPunto >= Integer.parseInt(((Element) sentencias.get(i)).getAttribute("inicio"))) {
+						System.out.println(((Element) sentencias.get(i)).getAttribute("valor"));
+						this.sentenciaPos = (numSentencia++);
+					}
+				}
+				if (comprobarPosicionPuntoCorrecta()) {
+					for (int i = 0; i <= sentenciaPos; i++) {
+						this.sentenciasFinales.add(traducirSentencia(this.sentencias.get(i)));
+					}
+				}
+				calcularPosicionCaret(this.lineaPunto);
+				ejecutarCodigoFinal();
+
+			}
 		}
 	}
-	
 
 	public void atras() {
-		if (sentenciaPos > 0) {
-			this.sentenciaPos--;
-			this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
-			calcularPosicionCaret(
-					Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
+		if (!completa) {
+			if (sentenciaPos > 0) {
+				this.sentenciaPos--;
+				this.linea = Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio"));
+				calcularPosicionCaret(
+						Integer.parseInt(((Element) this.sentencias.get(sentenciaPos)).getAttribute("inicio")));
 
-			traducirSentencia();
-			this.sentenciasFinales.remove(this.sentenciaPos+1);
-			
-			ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+				traducirSentencia();
+				this.sentenciasFinales.remove(this.sentenciaPos + 1);
+
+				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+				try {
+					ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(linea - 1, new ImageIcon(
+							getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				ejecutarCodigoFinal();
+			}
+		} else {
+			sentenciasFinales.clear();
+			if (puntoPos > 0) {
+				this.puntoPos--;
+				this.lineaPunto = puntos.get(puntoPos);
+
+				int numSentencia = 0;
+				for (int i = 0; i < sentencias.size(); i++) {
+
+					if (this.lineaPunto >= Integer.parseInt(((Element) sentencias.get(i)).getAttribute("inicio"))) {
+						System.out.println(((Element) sentencias.get(i)).getAttribute("valor"));
+						this.sentenciaPos = (numSentencia++);
+					}
+				}
+				if(comprobarPosicionPuntoCorrecta()) {
+					for (int i = 0; i <= sentenciaPos; i++) {
+						this.sentenciasFinales.add(traducirSentencia(this.sentencias.get(i)));
+					}
+				}
+				calcularPosicionCaret(this.lineaPunto);
+				ejecutarCodigoFinal();
+			}
+		}
+	}
+
+	public void establecerPuntos() {
+		GutterIconInfo puntos[] = ventana.scrollEditorDebug.getGutter().getBookmarks();
+		System.out.println("Tam puntos: " + puntos.length);
+		int i = 0;
+		for (GutterIconInfo punto : puntos) {
 			try {
-				ventana.scrollEditorDebug.getGutter().addLineTrackingIcon(linea-1, 
-						new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/flecha_orange.png")));
+				this.puntos
+						.add(Integer.parseInt(ventana.editorDebug.getLineOfOffset(punto.getMarkedOffset()) + "") + 1);
+				System.out.println("Punto: " + this.puntos.get(i));
+				i++;
 			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} 
-			ejecutarCodigoFinal();
+			}
 		}
 	}
 
@@ -399,9 +591,9 @@ public class Depuracion {
 			File archivo = new File("codigoFinal.proc");
 			archivo.createNewFile();
 			FileWriter escritor = new FileWriter(archivo);
-			String codigo = this.codigoInicial+"\n";
-			for(int i = 0; i<this.sentenciasFinales.size(); i++) {
-				codigo += this.sentenciasFinales.get(i)+"\n";
+			String codigo = this.codigoInicial + "\n";
+			for (int i = 0; i < this.sentenciasFinales.size(); i++) {
+				codigo += this.sentenciasFinales.get(i) + "\n";
 			}
 			codigo += "END";
 			escritor.write(codigo);
@@ -419,8 +611,8 @@ public class Depuracion {
 				}
 			}
 
-			//System.out.println(Arrays.toString(comandos));
-			
+			// System.out.println(Arrays.toString(comandos));
+
 			Process proc = rt.exec(comandos);
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -440,7 +632,7 @@ public class Depuracion {
 			Utilidades util = new Utilidades();
 			util.LeerArchivoXMLVariables("out.xml");
 			util.getTablaXMLVariables(ventana.tablaVariables);
-
+			proc.destroy();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

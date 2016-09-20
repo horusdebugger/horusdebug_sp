@@ -38,6 +38,7 @@ import javax.swing.border.Border;
 import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rtextarea.GutterIconInfo;
+import org.uso.depurador.CrearProcedimiento;
 import org.uso.depurador.Depuracion;
 import org.uso.depurador.main.Main;
 import org.uso.depurador.main.Principal;
@@ -52,7 +53,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 
 	/* Elementos de la barra de tareas */
 	public JButton nuevo, abrir, guardar, play, siguiente, atras, buscar, detener, ejecutarSQL, actualizar,
-			play_pausado;
+			play_pausado, nuevo_proc;
 	private JComboBox<String> bds;
 
 	/* Ventana */
@@ -65,6 +66,10 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		nuevo.setToolTipText("Nuevo");
 		nuevo.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/page_white.png")));
 
+		this.nuevo_proc = new JButton();
+		this.nuevo_proc.setToolTipText("Crear nuevo procedimiento almacenado");
+		this.nuevo_proc.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/script_gear.png")));
+		
 		this.abrir = new JButton();
 		abrir.setToolTipText("Abrir");
 		abrir.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/folder.png")));
@@ -74,7 +79,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		guardar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/disk.png")));
 
 		this.play = new JButton();
-		play.setToolTipText("Iniciar DepuraciÃ³n");
+		play.setToolTipText("Iniciar Depuración");
 		play.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_next.png")));
 
 		this.siguiente = new JButton();
@@ -83,7 +88,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_last.png")));
 
 		this.atras = new JButton();
-		atras.setToolTipText("AtrÃ¡s");
+		atras.setToolTipText("Volver");
 		atras.setIcon(
 				new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/resultset_first.png")));
 
@@ -92,7 +97,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		buscar.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/find.png")));
 
 		this.detener = new JButton();
-		detener.setToolTipText("Detener depuraciÃ³n");
+		detener.setToolTipText("Detener depuración");
 		this.detener.setIcon(new ImageIcon(getClass().getResource("/org/uso/depurador/componentes/iconos/stop2.png")));
 
 		this.ejecutarSQL = new JButton();
@@ -127,6 +132,8 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.addSeparator();
 		this.add(ejecutarSQL);
 		this.addSeparator();
+		this.add(nuevo_proc);
+		this.addSeparator();
 		this.add(new JLabel("Conectado a:  "));
 
 		// asignaciï¿½n de eventos a elementos de la toolbar
@@ -140,6 +147,7 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		this.detener.addActionListener(this);
 		this.siguiente.addActionListener(this);
 		this.atras.addActionListener(this);
+		this.nuevo_proc.addActionListener(this);
 
 		llenarBDS();
 
@@ -221,12 +229,12 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			rs.close();
 			Parametro param = pedirDatos(parametros);
 			if (param == null) {
-				ventana.depurador = new Depuracion(ventana);
+				ventana.depurador = new Depuracion(ventana, true);
 				ventana.depurador.setParametros(parametros);
 				ventana.depurador.iniciarDepuracion();
 			} else {
-				JOptionPane.showMessageDialog(ventana, "Ingrese un valor correcto al parametro:\nIdentificador: "+param.getNombre() + "\nTipo: "+param.getTipo()+"", "ERROR",
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(ventana, "Ingrese un valor correcto al parametro:\nIdentificador: "
+						+ param.getNombre() + "\nTipo: " + param.getTipo() + "", "ERROR", JOptionPane.ERROR_MESSAGE);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -244,22 +252,22 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 					+ listado.get(i).getNombre() + "\nTipo: " + listado.get(i).getTipo());
 			listado.get(i).setValor(valor);
 			try {
-				if(listado.get(i).getTipo().equals("varchar")) {
+				if (listado.get(i).getTipo().equals("varchar")) {
 					// agregar algo para las cadenas
-				} else if(listado.get(i).getTipo().equals("int")) {
+				} else if (listado.get(i).getTipo().equals("int")) {
 					int entero = Integer.parseInt(valor);
-				} else if(listado.get(i).getTipo().equals("double")) {
+				} else if (listado.get(i).getTipo().equals("double")) {
 					double doble = Double.parseDouble(valor);
 				}
-			} catch(NumberFormatException ex) {
+			} catch (NumberFormatException ex) {
 				ex.printStackTrace();
 				p = listado.get(i);
 				break;
 			}
-			
+
 		}
 		return p;
-		
+
 	}
 
 	void ejecutarPausado() {
@@ -281,16 +289,16 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 			}
 			rs.close();
 			Parametro param = pedirDatos(parametros);
-			if(param == null) {
-				ventana.depurador = new Depuracion(ventana);
+			if (param == null) {
+				ventana.depurador = new Depuracion(ventana, false);
 				ventana.depurador.setParametros(parametros);
 				ventana.depurador.iniciarDepuracionPausada();
 				ventana.editorDebug.requestFocusInWindow();
 			} else {
-				
-				JOptionPane.showMessageDialog(ventana, "Ingrese un valor correcto al parametro:\nIdentificador: "+param.getNombre() + "\nTipo: "+param.getTipo()+"", "ERROR",
-						JOptionPane.ERROR_MESSAGE);
-				
+
+				JOptionPane.showMessageDialog(ventana, "Ingrese un valor correcto al parametro:\nIdentificador: "
+						+ param.getNombre() + "\nTipo: " + param.getTipo() + "", "ERROR", JOptionPane.ERROR_MESSAGE);
+
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -615,22 +623,42 @@ public class BarraHerramientas extends JToolBar implements ActionListener {
 		} else if (e.getSource() == this.play_pausado) {
 			ejecutarPausado();
 		} else if (e.getSource() == this.detener) {
-			siguiente.setEnabled(false);
-			atras.setEnabled(false);
-			detener.setEnabled(false);
-			play.setEnabled(true);
-			play_pausado.setEnabled(true);
-			ventana.editorDebug.setBackground(Color.white);
-			ventana.editorDebug.setCaretPosition(ventana.editorDebug.getText().length());
-			// rgb(255,255,170)
-			ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
-			ventana.arbolBD.setEnabled(true);
-			ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
-			ventana.scrollEditorDebug.getGutter().setBookmarkingEnabled(true);
+			if (!ventana.depurador.completa) {
+				siguiente.setEnabled(false);
+				atras.setEnabled(false);
+				detener.setEnabled(false);
+				play.setEnabled(true);
+				play_pausado.setEnabled(true);
+				ventana.editorDebug.setBackground(Color.white);
+				ventana.editorDebug.setCaretPosition(ventana.editorDebug.getText().length());
+				ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
+				ventana.arbolBD.setEnabled(true);
+				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();
+				ventana.scrollEditorDebug.getGutter().setBookmarkingEnabled(true);
+			} else {
+				siguiente.setEnabled(false);
+				atras.setEnabled(false);
+				detener.setEnabled(false);
+				play.setEnabled(true);
+				play_pausado.setEnabled(true);
+				ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
+				ventana.arbolBD.setEnabled(true);
+				ventana.editorDebug.setBackground(Color.white);
+				ventana.editorDebug.setCaretPosition(ventana.editorDebug.getText().length());
+				ventana.scrollEditorDebug.getGutter().setBookmarkingEnabled(true);
+				ventana.editorDebug.setBackground(Color.white);
+				ventana.editorDebug.setCurrentLineHighlightColor(Color.getHSBColor(255, 255, 170));
+				ventana.depurador.completa = false;
+				ventana.scrollEditorDebug.getGutter().removeAllTrackingIcons();			
+				}
 		} else if (e.getSource() == this.siguiente) {
 			ventana.depurador.siguiente();
 		} else if (e.getSource() == this.atras) {
 			ventana.depurador.atras();
+		} else if (e.getSource() == this.nuevo_proc) {
+			CrearProcedimiento crear = new CrearProcedimiento(ventana);
+			crear.setLocationRelativeTo(null);
+			crear.setVisible(true);
 		}
 
 	}

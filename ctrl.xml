@@ -1,19 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-15'?>
-<procedimiento inicio="1" begin="2" end="27" valor="CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento2` (IN v VARCHAR(255),id INT) BEGIN" >
-<sentencia id="1" tipo="declaracion" inicio="3" final="3" valor="DECLARE n1 INT;" />
-<sentencia id="2" tipo="declaracion" inicio="4" final="4" valor="DECLARE n2 INT;" />
-<sentencia id="3" tipo="declaracion" inicio="5" final="5" valor="DECLARE n3 INT;" />
-<sentencia id="4" tipo="asignacion" inicio="6" final="6" valor="set n1 = 21;" oprn1="n1" opr="=" oprn2="21" toprn2="valor" toprn1="(null)" />
-<sentencia id="5" tipo="delete" inicio="7" final="7" valor="DELETE FROM persona WHERE id = 6;" />
-<sentencia id="6" tipo="asignacion" inicio="8" final="8" valor="set n3 = 1;" oprn1="n3" opr="=" oprn2="1" toprn2="valor" toprn1="(null)" />
-<sentencia id="16" tipo="if" inicio="10" final="24" valor="" />
-<sentencia id="7" tipo="asignacion" inicio="11" final="11" valor="set n2 = 10;" oprn1="n2" opr="=" oprn2="10" toprn2="valor" toprn1="(null)" />
-<sentencia id="8" tipo="select" inicio="12" final="12" valor="select * FROM  persona;" />
-<sentencia id="9" tipo="insert" inicio="13" final="13" valor="insert INTO persona VALUES (5,'jose');" />
-<sentencia id="15" tipo="if" inicio="14" final="23" valor="" />
-<sentencia id="11" tipo="asignacion" inicio="17" final="17" valor="set n2 = 0;" oprn1="n2" opr="=" oprn2="0" toprn2="valor" toprn1="(null)" />
-<sentencia id="13" tipo="if" inicio="18" final="20" valor="" />
-<sentencia id="12" tipo="asignacion" inicio="19" final="19" valor="set n3 = 50;" oprn1="n3" opr="=" oprn2="50" toprn2="valor" toprn1="(null)" />
-<sentencia id="14" tipo="asignacion" inicio="21" final="21" valor="set n1 = 50;" oprn1="n1" opr="=" oprn2="50" toprn2="valor" toprn1="(null)" />
-<sentencia id="17" tipo="asignacion" inicio="26" final="26" valor="set n3 = 20;" oprn1="n3" opr="=" oprn2="20" toprn2="valor" toprn1="(null)" />
+<procedimiento inicio="1" begin="2" end="5" valor="CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento1` (IN nombre VARCHAR(100),IN edad INT) BEGIN" >
+<sentencia id="1" tipo="declaracion" inicio="3" final="3" valor="declare puesto INT;" />
+<sentencia id="2" tipo="declaracion" inicio="4" final="4" valor="declare promedio INT;" />
+<sentencia id="4" tipo="end" inicio="5" final="5" valor="" />
 </procedimiento>

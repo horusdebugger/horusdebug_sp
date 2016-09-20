@@ -1,9 +1,0 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `procedimiento`(in id int)
-begin
-	declare n1 int;
-	declare n2 int;
-	set n1 = 25;
-	select * from persona;
-	delete from persona where id = 6;
-	insert into persona(id, nombre) values(1, 'Omar');
-end

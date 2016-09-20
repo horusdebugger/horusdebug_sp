@@ -1,17 +1,17 @@
 <?xml version='1.0'?>
 <variables>
 <variable>
-<nombre>id</nombre>
+<nombre>edad</nombre>
 <tipo>int</tipo>
-<valor>11</valor>
+<valor>25</valor>
 </variable>
 <variable>
-<nombre>v</nombre>
+<nombre>nombre</nombre>
 <tipo>varchar</tipo>
-<valor>holamundo</valor>
+<valor>LUIS</valor>
 </variable>
 <variable>
-<nombre>n1</nombre>
+<nombre>puesto</nombre>
 <tipo>int</tipo>
 <valor>0</valor>
 </variable>
